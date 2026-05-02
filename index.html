@@ -226,7 +226,7 @@
     <div class="card">
       <div class="card-title">Step 2</div>
       <h2>新規予約実績データ</h2>
-      <p>PMS予約エクスポートCSV（<code style="font-size:11px;background:#f3f4f6;padding:1px 4px;border-radius:3px;">Booking_*.csv</code>）またはM1〜M10形式CSVをアップロードしてください。<br>PMS形式の場合、実行月設定をもとに前月の予約を自動集計します。</p>
+      <p>PMSから「前月に確定した予約」でエクスポートしたCSV（<code style="font-size:11px;background:#f3f4f6;padding:1px 4px;border-radius:3px;">Booking_*.csv</code>）をアップロードしてください。<br>確認済み予約のみ抽出し、チェックイン月別（M1〜M10）に自動集計します。</p>
       <div class="file-drop" id="drop-booking">
         <input type="file" id="file-booking" accept=".csv">
         <div class="icon">📅</div>
@@ -506,18 +506,17 @@ function setupBookingFileInput() {
           statusEl.className = 'file-status show';
 
           // 集計詳細表示
-          const m1Label = stats.mMonths[0].str;
-          const m10Label = stats.mMonths[9].str;
+          const m1Str  = stats.mMonths[0].str;
+          const m10Str = stats.mMonths[9].str;
           statsDiv.innerHTML = `
-            <strong>PMS予約データ自動集計</strong><br>
-            前月フィルタ：<b>${stats.prevMonthStr.replace('-', '年').replace(/(\d\d)$/, '$1月')}</b>の予約日 ／
-            対象チェックイン：<b>${m1Label}〜${m10Label}</b>（M1〜M10）<br>
+            <strong>PMS予約データ自動集計結果</strong><br>
+            対象チェックイン期間：<b>${m1Str}〜${m10Str}</b>（M1〜M10）<br>
             読込総数：${stats.total}件 ／
-            キャンセル除外：${stats.cancelled}件 ／
-            前月以外：${stats.outOfRange}件 ／
-            範囲外チェックイン：${stats.pastCheckin}件 ／
-            <b>集計対象：${stats.included}件</b>
-            ${stats.included === 0 ? '<br><span style="color:#b45309;">※ 集計対象が0件です。実行月の設定と予約データの期間を確認してください。</span>' : ''}
+            ブロック除外：${stats.excBlocked}件 ／
+            キャンセル除外：${stats.excCancelled}件 ／
+            範囲外チェックイン除外：${stats.excOutOfRange}件 ／
+            <b>集計対象：${stats.included}件（${processed.length}物件）</b>
+            ${stats.included === 0 ? '<br><span style="color:#b45309;">※ 集計対象が0件です。実行月の設定と予約データのエクスポート期間を確認してください。</span>' : ''}
             ${renderBookingStatsTable(processed, stats.mMonths)}
           `;
           statsDiv.style.display = 'block';
@@ -551,17 +550,15 @@ function setupBookingFileInput() {
   });
 }
 
-// PMS生データ → M1-M10形式に変換
+// PMS生データ（前月確定予約エクスポート）→ M1-M10形式に変換
+// ファイルは「前月に予約確定したもの」として既にフィルタ済みで渡される想定。
+// 除外条件: 状態が「キャンセル」含む または「ブロックされた」
+// 集計対象: チェックイン月が M1（翌月）〜 M10（10ヶ月先）の確認済み予約
 function processRawBookings(rows, runMonth) {
   const runYear = parseInt(runMonth.substring(0, 4));
   const runMon  = parseInt(runMonth.substring(4, 6));
 
-  // 前月
-  let prevYear = runYear, prevMon = runMon - 1;
-  if (prevMon === 0) { prevMon = 12; prevYear--; }
-  const prevMonthStr = `${prevYear}-${String(prevMon).padStart(2, '0')}`;
-
-  // M1〜M10の年月リスト
+  // M1〜M10の年月リスト（実行月の翌月〜10ヶ月先）
   const mMonths = [];
   for (let i = 1; i <= 10; i++) {
     let y = runYear, m = runMon + i;
@@ -569,26 +566,26 @@ function processRawBookings(rows, runMonth) {
     mMonths.push({
       label: `M${i}`,
       str: `${y}-${String(m).padStart(2, '0')}`,
-      year: y, mon: m,
     });
   }
+  const mMonthSet = new Set(mMonths.map(mm => mm.str));
 
-  let cancelled = 0, outOfRange = 0, pastCheckin = 0, included = 0;
+  let excBlocked = 0, excCancelled = 0, excOutOfRange = 0, included = 0;
   const propMap = {}; // 物件名 -> {M1:0, ..., M10:0}
 
   for (const row of rows) {
-    // キャンセル除外
     const status = row['状態'] || '';
-    if (status.includes('キャンセル')) { cancelled++; continue; }
 
-    // 予約日が前月かチェック
-    const bookingMonth = (row['予約日'] || '').substring(0, 7);
-    if (bookingMonth !== prevMonthStr) { outOfRange++; continue; }
+    // ブロックされた を除外
+    if (status === 'ブロックされた') { excBlocked++; continue; }
 
-    // チェックイン月がM1-M10の範囲かチェック
+    // キャンセル系を除外
+    if (status.includes('キャンセル')) { excCancelled++; continue; }
+
+    // チェックイン月がM1-M10の範囲外を除外
     const checkinMonth = (row['チェックイン'] || '').substring(0, 7);
     const mMonth = mMonths.find(mm => mm.str === checkinMonth);
-    if (!mMonth) { pastCheckin++; continue; }
+    if (!mMonth) { excOutOfRange++; continue; }
 
     const propName = (row['物件名'] || '').trim();
     if (!propName) continue;
@@ -605,8 +602,9 @@ function processRawBookings(rows, runMonth) {
   return {
     processed: Object.values(propMap),
     stats: {
-      total: rows.length, cancelled, outOfRange, pastCheckin, included,
-      prevMonthStr, mMonths,
+      total: rows.length,
+      excBlocked, excCancelled, excOutOfRange, included,
+      mMonths,
     },
   };
 }
