@@ -298,22 +298,6 @@
     .gs-status.ok { color: #065f46; background: #d1fae5; border: 1px solid #6ee7b7; border-radius: 6px; padding: 6px 10px; }
     .gs-status.err { color: #991b1b; background: #fee2e2; border: 1px solid #fca5a5; border-radius: 6px; padding: 6px 10px; }
 
-    /* GASセットアップガイド */
-    .gas-guide { margin-bottom: 24px; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-    .gas-guide-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 20px; background: var(--brand-bg); cursor: pointer; user-select: none;
-    }
-    .gas-guide-header:hover { background: #D0EEF9; }
-    .gas-guide-title { font-size: 14px; font-weight: 700; color: var(--brand-dark); }
-    .gas-guide-body { display: none; padding: 20px; background: var(--surface); }
-    .gas-guide-body.open { display: block; }
-    .gas-step { display: flex; gap: 12px; margin-bottom: 16px; align-items: flex-start; }
-    .gas-step-num { background: var(--brand); color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-    .gas-step-text { font-size: 13px; color: var(--text-muted); line-height: 1.7; }
-    .code-block { background: #2A4050; color: #E8F6FC; border-radius: 10px; padding: 14px; font-size: 11px; font-family: monospace; overflow-x: auto; margin-top: 8px; white-space: pre; position: relative; }
-    .btn-copy-code { position: absolute; top: 8px; right: 8px; background: var(--brand); color: #fff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; }
-    .btn-copy-code:hover { background: var(--brand-dark); }
     .btn-export-gs { background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand-light) 100%); color: #fff; }
     .btn-export-gs:hover { opacity: 0.92; }
     .btn-export-gs:disabled { background: #ccc; cursor: not-allowed; }
@@ -462,54 +446,6 @@
     <button class="btn-run" id="btn-run" disabled>▶ 価格調整を実行する</button>
   </div>
 
-  <!-- Google Sheetsセットアップガイド -->
-  <div class="gas-guide" id="gas-guide">
-    <div class="gas-guide-header" onclick="toggleGasGuide()">
-      <span class="gas-guide-title">📋 Google Sheets連携のセットアップ方法（初回のみ・約10分）</span>
-      <span id="gas-guide-arrow" style="font-size:12px;color:var(--brand-dark);">▼ 展開</span>
-    </div>
-    <div class="gas-guide-body" id="gas-guide-body">
-      <p style="font-size:13px;color:#555;margin-bottom:16px;">Google Cloud Console でOAuth認証情報を1回だけ作成します。以降は「Googleでサインイン」ボタンを押すだけでプライベートなスプレッドシートを読み書きできます。</p>
-      <div class="gas-step">
-        <div class="gas-step-num">1</div>
-        <div class="gas-step-text">
-          <a href="https://console.cloud.google.com/" target="_blank" rel="noopener" class="link-brand">Google Cloud Console</a> を開き、「新しいプロジェクト」を作成します（無料）。
-        </div>
-      </div>
-      <div class="gas-step">
-        <div class="gas-step-num">2</div>
-        <div class="gas-step-text">
-          左メニュー <strong>「APIとサービス」→「ライブラリ」</strong> で「Google Sheets API」を検索して <strong>「有効にする」</strong>。
-        </div>
-      </div>
-      <div class="gas-step">
-        <div class="gas-step-num">3</div>
-        <div class="gas-step-text">
-          <strong>「APIとサービス」→「認証情報」→「認証情報を作成」→「OAuthクライアントID」</strong> を選択。<br>
-          アプリの種類：<strong>ウェブアプリケーション</strong>、「承認済みのリダイレクトURI」に下記を追加して保存：<br>
-          <code style="font-size:11px;background:#f3f4f6;padding:2px 6px;border-radius:3px;">https://base-price-coordination-tool.pages.dev/api/auth/callback</code>
-        </div>
-      </div>
-      <div class="gas-step">
-        <div class="gas-step-num">4</div>
-        <div class="gas-step-text">
-          作成後に表示される <strong>「クライアントID」</strong> を上の設定欄「Google Client ID」に貼り付けます。
-        </div>
-      </div>
-      <div class="gas-step">
-        <div class="gas-step-num">5</div>
-        <div class="gas-step-text">
-          同じ画面の <strong>「クライアントシークレット」</strong> を <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener" class="link-brand">Cloudflareダッシュボード</a> の「Pages → base-price-coordination-tool → 設定 → 環境変数」に <code style="font-size:11px;background:#f3f4f6;padding:2px 6px;border-radius:3px;">GOOGLE_CLIENT_SECRET</code> として追加して再デプロイします。
-        </div>
-      </div>
-      <div class="gas-step">
-        <div class="gas-step-num">6</div>
-        <div class="gas-step-text">
-          設定欄の <strong>「Googleでサインイン」</strong> を押し、Googleアカウントを選択して許可します。サインイン後、Step 1 の「読み込む」が自動実行されます。
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- エラー -->
   <div class="error-box" id="error-box"></div>
