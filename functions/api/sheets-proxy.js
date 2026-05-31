@@ -119,19 +119,45 @@ export async function onRequestPost(context) {
   //   return new Response(JSON.stringify({ error: '認証トークンが無効です。再ログインしてください' }), { status: 401, headers: corsHeaders });
   // }
 
-  // ── 2. サービスアカウント設定確認 ────────────────────────────────────
-  const saEmail = env.GOOGLE_SA_EMAIL;
-  const saKey   = env.GOOGLE_SA_PRIVATE_KEY;
-  if (!saEmail || !saKey) {
-    return new Response(JSON.stringify({ error: 'Google Sheets連携が設定されていません（管理者にお問い合わせください）' }), { status: 503, headers: corsHeaders });
-  }
-
   // ── 3. リクエスト解析 ─────────────────────────────────────────────────
   let body;
   try { body = await request.json(); } catch {
     return new Response(JSON.stringify({ error: 'リクエスト形式エラー' }), { status: 400, headers: corsHeaders });
   }
   const { method = 'GET', path, body: sheetsBody } = body;
+
+  // ── 2. サービスアカウント設定確認（なければCSVフォールバック）────────
+  const saEmail = env.GOOGLE_SA_EMAIL;
+  const saKey   = env.GOOGLE_SA_PRIVATE_KEY;
+  if (!saEmail || !saKey) {
+    // サービスアカウント未設定 → 公開スプレッドシートをCSV経由で取得
+    const m = (path || '').match(/spreadsheets\/([^/]+)\/values\/(.+)/);
+    if (!m) {
+      return new Response(JSON.stringify({ error: 'Google Sheets連携が設定されていません' }), { status: 503, headers: corsHeaders });
+    }
+    const spreadsheetId = m[1];
+    const sheetName = decodeURIComponent(m[2]);
+    const csvUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+    try {
+      const csvRes = await fetch(csvUrl);
+      if (!csvRes.ok) throw new Error(`HTTP ${csvRes.status}`);
+      const csvText = await csvRes.text();
+      // 簡易CSVパース → [[...], [...], ...] 形式に変換
+      const rows = csvText.split('\n').map(line => {
+        const cells = []; let cur = ''; let inQ = false;
+        for (let i = 0; i < line.length; i++) {
+          if (line[i] === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+          else if (line[i] === ',' && !inQ) { cells.push(cur); cur = ''; }
+          else cur += line[i];
+        }
+        cells.push(cur);
+        return cells;
+      }).filter(r => r.some(c => c.trim() !== ''));
+      return new Response(JSON.stringify({ values: rows }), { status: 200, headers: corsHeaders });
+    } catch (e) {
+      return new Response(JSON.stringify({ error: 'スプレッドシートを読み込めませんでした。「リンクを知っている全員が閲覧可」に設定されているか確認してください。' }), { status: 503, headers: corsHeaders });
+    }
+  }
   if (!path) {
     return new Response(JSON.stringify({ error: 'path が指定されていません' }), { status: 400, headers: corsHeaders });
   }
