@@ -1079,15 +1079,34 @@ function setupMasterFileInput() {
 }
 
 function parseXlsxRawData(rawData) {
-  // ヘッダー行: [null, null, null, '当初', date1, date2, ...]
-  const headerRow = rawData[0] || [];
+  // ── 日区分列・物件名列の位置を動的検出 ──────────────────────────────
+  // データ行を走査して「平日」「週末」が入っている列インデックスを特定する
+  let dayTypeIdx = -1;
+  for (let i = 1; i < Math.min(rawData.length, 20); i++) {
+    const row = rawData[i] || [];
+    for (let j = 0; j < row.length; j++) {
+      const v = String(row[j] || '').trim();
+      if (v === '平日' || v === '週末') { dayTypeIdx = j; break; }
+    }
+    if (dayTypeIdx >= 0) break;
+  }
+  if (dayTypeIdx < 0) dayTypeIdx = 2; // フォールバック: 従来のC列
 
-  // 列インデックス → 列キーのマップ構築
-  const colMap = {}; // index(number) -> key(string)
-  colMap[3] = '当初';
-  for (let i = 4; i < headerRow.length; i++) {
+  // 物件名列は日区分列の1つ左（ただし最低0）
+  const propNameIdx = Math.max(0, dayTypeIdx - 1);
+
+  // ── 価格列マップ構築（日区分列より右が価格列）───────────────────────
+  // ヘッダー行で「当初」または日付セルを探す（日区分列+1列目以降）
+  const headerRow = rawData[0] || [];
+  const colMap = {}; // index -> key
+
+  // 「当初」列 = 日区分列+1
+  const initialIdx = dayTypeIdx + 1;
+  colMap[initialIdx] = '当初';
+
+  for (let i = initialIdx + 1; i < headerRow.length; i++) {
     const h = headerRow[i];
-    if (h === null || h === undefined) continue;
+    if (h === null || h === undefined || String(h).trim() === '') continue;
     let key;
     if (h instanceof Date) {
       const y = h.getFullYear();
@@ -1095,12 +1114,11 @@ function parseXlsxRawData(rawData) {
       const d = String(h.getDate()).padStart(2, '0');
       key = `${y}-${m}-${d}`;
     } else {
-      key = String(h);
+      key = String(h).trim();
     }
     colMap[i] = key;
   }
 
-  // 列の順序リスト (index順)
   const orderedCols = Object.keys(colMap)
     .map(Number).sort((a, b) => a - b)
     .map(i => colMap[i]);
@@ -1113,19 +1131,19 @@ function parseXlsxRawData(rawData) {
   for (let i = 1; i < rawData.length; i++) {
     const row = rawData[i];
     if (!row) continue;
-    const dayType = row[2];
-    if (!dayType || (dayType !== '平日' && dayType !== '週末')) continue;
+    const dayType = String(row[dayTypeIdx] || '').trim();
+    if (dayType !== '平日' && dayType !== '週末') continue;
 
-    // 物件名は平日行のみに入っている（週末行は引き継ぎ）
-    if (row[1] !== null && row[1] !== undefined && row[1] !== '') {
-      lastPropName = String(row[1]);
+    // 物件名は平日行のみに入っている（週末行は空欄→引き継ぎ）
+    const nameVal = row[propNameIdx];
+    if (nameVal !== null && nameVal !== undefined && String(nameVal).trim() !== '') {
+      lastPropName = String(nameVal).trim();
     }
-    const propName = lastPropName;
-    if (!propName) continue;
+    if (!lastPropName) continue;
 
-    rowPropNames[i] = propName;
+    rowPropNames[i] = lastPropName;
 
-    const internalRow = { '物件名': propName, '日区分': dayType };
+    const internalRow = { '物件名': lastPropName, '日区分': dayType };
     for (const idxStr of Object.keys(colMap)) {
       const idx = Number(idxStr);
       const v = row[idx];
@@ -1922,10 +1940,7 @@ function setupMasterGoogleSheetsInput() {
 
       // Excelファイルと同じ parseXlsxRawData を使って列インデックス基準でパース
       const parsed = parseXlsxRawData(rows);
-      if (parsed.masterData.length === 0) {
-        const sample = rows.slice(0, 3).map(r => JSON.stringify(r)).join(' / ');
-        throw new Error(`有効なデータが見つかりません（先頭3行: ${sample}）`);
-      }
+      if (parsed.masterData.length === 0) throw new Error('有効なデータが見つかりません');
 
       state.masterData         = parsed.masterData;
       state.masterFields       = parsed.masterFields;
