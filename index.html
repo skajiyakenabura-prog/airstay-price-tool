@@ -1922,7 +1922,10 @@ function setupMasterGoogleSheetsInput() {
 
       // Excelファイルと同じ parseXlsxRawData を使って列インデックス基準でパース
       const parsed = parseXlsxRawData(rows);
-      if (parsed.masterData.length === 0) throw new Error('有効なデータが見つかりません');
+      if (parsed.masterData.length === 0) {
+        const sample = rows.slice(0, 3).map(r => JSON.stringify(r)).join(' / ');
+        throw new Error(`有効なデータが見つかりません（先頭3行: ${sample}）`);
+      }
 
       state.masterData         = parsed.masterData;
       state.masterFields       = parsed.masterFields;
