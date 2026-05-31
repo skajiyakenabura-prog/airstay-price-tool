@@ -2005,8 +2005,7 @@ function setupMasterGoogleSheetsInput() {
       updateGsExportBtn();
     } catch (err) {
       if (err.message.includes('認証が必要') || err.message.includes('401')) {
-        showGsErr('ログインが必要です。ログイン画面からサインインしてください。');
-        setOverlay(true);
+        showGsErr('Google Sheets連携にはサーバー認証が必要です。「ファイル選択」タブからExcelファイルをアップロードしてください。');
       } else if (err.message.includes('503') || err.message.includes('設定されていません')) {
         showGsErr('Google Sheets連携が設定されていません。管理者にお問い合わせください。');
       } else {
