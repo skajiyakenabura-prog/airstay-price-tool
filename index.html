@@ -1092,8 +1092,8 @@ function parseXlsxRawData(rawData) {
   }
   if (dayTypeIdx < 0) dayTypeIdx = 2; // フォールバック: 従来のC列
 
-  // 物件名列は日区分列の1つ左（ただし最低0）
-  const propNameIdx = Math.max(0, dayTypeIdx - 1);
+  // 物件名列は常にB列（インデックス1）
+  const propNameIdx = 1;
 
   // ── 価格列マップ構築（日区分列より右が価格列）───────────────────────
   // ヘッダー行で「当初」または日付セルを探す（日区分列+1列目以降）
