@@ -700,7 +700,8 @@ document.getElementById('login-email').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') document.getElementById('login-pass').focus();
 });
 
-checkAuth();
+// checkAuth(); // 一時的に認証を無効化
+setOverlay(false);
 
 // ==================== 状態管理 ====================
 const APP_CONFIG = {
