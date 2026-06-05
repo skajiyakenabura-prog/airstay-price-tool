@@ -1227,6 +1227,9 @@ function processRawBookings(rows, runMonth, overrideRoomCol, mode = 'count') {
     const roomRaw = hasRoomCol ? (row[roomColName] || '').trim() : '';
     const key     = calcListingKey(rawProp, roomRaw);
 
+    // ブロック・キャンセル含む全行でCSVに物件名が存在することを記録（診断用）
+    allPropNamesInCsv.add(key);
+
     const checkinRaw   = (row['チェックイン'] || '').trim().replace(/\//g, '-');
     const checkinMonth = checkinRaw.substring(0, 7);
     const mMonth       = mMonths.find(mm => mm.str === checkinMonth);
@@ -1242,9 +1245,6 @@ function processRawBookings(rows, runMonth, overrideRoomCol, mode = 'count') {
     }
 
     if (status.includes('キャンセル')) { excCancelled++; continue; }
-
-    // 確定予約 → allPropNamesInCsv に追加（期間外も含む）
-    allPropNamesInCsv.add(key);
     if (!mMonth) { excOutOfRange++; continue; }
 
     if (mode === 'count') {
