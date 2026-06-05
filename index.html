@@ -2712,7 +2712,7 @@ document.getElementById('btn-confirm-new-prices-with-score').addEventListener('c
 
     const { deltaRate, status, label } = calcDelta(finalScore);
     const { newPrice, delta } = applyDeltaRate(oldPrice, deltaRate);
-    const minPrice = APP_CONFIG.minSalePrice;
+    const minPrice = APP_CONFIG.minPrice;
 
     r.newPrice  = Math.max(newPrice, minPrice);
     r.delta     = r.newPrice - oldPrice;
