@@ -2955,7 +2955,11 @@ async function executeGsWrite() {
       newPropEntries.push({ propNameForSheet, roomNumForSheet, 平日Price: 平日InitPrice, 週末Price: 週末InitPrice, 平日NewPrice, 週末NewPrice, insertRowIdx, listingKey: r.propName });
     }
     // 下から順に処理（上に挿入すると行インデックスがずれるため逆順）
-    newPropEntries.sort((a, b) => b.insertRowIdx - a.insertRowIdx);
+    // 同じ挿入位置の物件は名前の降順（#II→#I等）→offset計算で昇順（#I上・#II下）になる
+    newPropEntries.sort((a, b) => {
+      if (b.insertRowIdx !== a.insertRowIdx) return b.insertRowIdx - a.insertRowIdx;
+      return b.listingKey.localeCompare(a.listingKey); // 同位置は名前降順：後に処理されるほど上に配置
+    });
 
     if (newPropEntries.length > 0) {
       // 行の挿入リクエスト
@@ -3038,6 +3042,19 @@ async function executeGsWrite() {
         groupCount++;
         const r1 = offsets.get(e.listingKey);
         newRowData.push({ range: `${sheetName}!A${r1}`, values: [[baseSeq + groupCount]] });
+        // A列も平日・週末2行を縦結合
+        mergeRequests.push({
+          mergeCells: {
+            range: {
+              sheetId: gsSheetId,
+              startRowIndex: r1 - 1,
+              endRowIndex:   r1 + 1,
+              startColumnIndex: 0,
+              endColumnIndex:   1,
+            },
+            mergeType: 'MERGE_ALL',
+          }
+        });
       }
       // 既存行の連番繰り下げ（新規挿入でずれた分を更新）
       const existSeqUpdates = [];
