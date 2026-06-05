@@ -2722,7 +2722,7 @@ document.getElementById('btn-confirm-new-prices-with-score').addEventListener('c
     r.status    = status;
     r.label     = label;
     r.oldPrice  = oldPrice;
-    r.isNew     = false; // 需要スコア適用後は通常物件として扱う
+    // r.isNew はtrueのまま保持（executeGsWriteで新規行挿入に使うため）
   }
 
   renderResults(state.results);
