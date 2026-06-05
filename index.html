@@ -2976,6 +2976,23 @@ async function executeGsWrite() {
       }
     }
 
+    // 新規行挿入によるbatchData・colorRequestsの行番号補正
+    if (newPropEntries.length > 0) {
+      for (const item of batchData) {
+        const m = item.range.match(/^(.+![A-Z]+)(\d+)$/);
+        if (!m) continue;
+        const origRowIdx = parseInt(m[2], 10) - 1; // 0-based in currentValues
+        const shift = newPropEntries.filter(e => e.insertRowIdx <= origRowIdx).length * 2;
+        if (shift > 0) item.range = m[1] + (parseInt(m[2], 10) + shift);
+      }
+      for (const req of colorRequests) {
+        const rng = req.repeatCell?.range;
+        if (!rng) continue;
+        const shift = newPropEntries.filter(e => e.insertRowIdx <= rng.startRowIndex).length * 2;
+        if (shift > 0) { rng.startRowIndex += shift; rng.endRowIndex += shift; }
+      }
+    }
+
     // 値の書き込み
     await sheetsPost(`spreadsheets/${spreadsheetId}/values:batchUpdate`, {
       valueInputOption: 'USER_ENTERED',
