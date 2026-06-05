@@ -2922,68 +2922,50 @@ async function executeGsWrite() {
         newRowData.push({ range: `${sheetName}!${newColLetter}${r2}`, values: [[formatPrice(e.週末Price)]] });
       }
 
-      // ── A列（連番）の割り当てと更新 ──────────────────────────────────
-      // 既存平日行の連番を収集
-      const existingWeekdayRows = [];
+      // ── A列（連番）書き込み ──────────────────────────────────────────
+      // 挿入位置の昇順で処理し、各新規行に直接seq番号を割り当てる
+      const ascOrder = [...newPropEntries].sort((a, b) => a.insertRowIdx - b.insertRowIdx);
+      let prevInsertIdx = -1;
+      let baseSeq = 0;
+      let groupCount = 0;
+      for (const e of ascOrder) {
+        if (e.insertRowIdx !== prevInsertIdx) {
+          // 新しい挿入位置: 直前の平日行の連番をcurrentValuesから取得
+          baseSeq = 0;
+          for (let i = e.insertRowIdx - 1; i >= 1; i--) {
+            const row = currentValues[i] || [];
+            if (String(row[gsDayIdx] || '').trim() === '平日') {
+              const nv = String(row[0] || '').trim();
+              if (/^\d+$/.test(nv)) { baseSeq = parseInt(nv, 10); break; }
+            }
+          }
+          // この挿入位置より上で既に挿入済みの件数を加算
+          baseSeq += ascOrder.filter(x => x.insertRowIdx < e.insertRowIdx).length;
+          groupCount = 0;
+          prevInsertIdx = e.insertRowIdx;
+        }
+        groupCount++;
+        const r1 = offsets.get(e.listingKey);
+        newRowData.push({ range: `${sheetName}!A${r1}`, values: [[baseSeq + groupCount]] });
+      }
+      // 既存行の連番繰り下げ（新規挿入でずれた分を更新）
+      const existSeqUpdates = [];
       for (let i = 1; i < currentValues.length; i++) {
         const row = currentValues[i] || [];
-        const dayType = String(row[gsDayIdx] || '').trim();
-        if (dayType === '平日') {
-          const numVal = row[0] ? String(row[0]).trim() : '';
-          existingWeekdayRows.push({
-            origRowIdx: i,
-            seqNum: /^\d+$/.test(numVal) ? parseInt(numVal, 10) : null,
-          });
-        }
+        if (String(row[gsDayIdx] || '').trim() !== '平日') continue;
+        const nv = String(row[0] || '').trim();
+        if (!/^\d+$/.test(nv)) continue;
+        const origSeq = parseInt(nv, 10);
+        const shiftCount = newPropEntries.filter(e => e.insertRowIdx <= i).length;
+        if (shiftCount === 0) continue;
+        const newSheetRow = i + shiftCount * 2 + 1; // 1-based
+        existSeqUpdates.push({ range: `${sheetName}!A${newSheetRow}`, values: [[origSeq + shiftCount]] });
       }
-      // 新規物件を挿入位置の昇順に並べる
-      const newPropAsc = [...newPropEntries].sort((a, b) => a.insertRowIdx - b.insertRowIdx);
-      // 既存行+新規行を統合した順序リストを構築（アルファベット順）
-      const combinedOrder = [];
-      let existCursor = 0;
-      for (const e of newPropAsc) {
-        while (existCursor < existingWeekdayRows.length && existingWeekdayRows[existCursor].origRowIdx < e.insertRowIdx) {
-          combinedOrder.push({ isNew: false, ...existingWeekdayRows[existCursor] });
-          existCursor++;
-        }
-        combinedOrder.push({ isNew: true, listingKey: e.listingKey });
-      }
-      while (existCursor < existingWeekdayRows.length) {
-        combinedOrder.push({ isNew: false, ...existingWeekdayRows[existCursor] });
-        existCursor++;
-      }
-      // 最初の新規物件の直前の連番を起点に再連番
-      const firstNewPos = combinedOrder.findIndex(item => item.isNew);
-      if (firstNewPos >= 0) {
-        let lastSeq = 0;
-        for (let i = firstNewPos - 1; i >= 0; i--) {
-          if (!combinedOrder[i].isNew && combinedOrder[i].seqNum !== null) {
-            lastSeq = combinedOrder[i].seqNum;
-            break;
-          }
-        }
-        const newSeqMap = new Map(); // listingKey → 割り当て連番
-        let seq = lastSeq + 1;
-        for (let i = firstNewPos; i < combinedOrder.length; i++) {
-          const item = combinedOrder[i];
-          if (item.isNew) {
-            newSeqMap.set(item.listingKey, seq);
-          } else if (item.seqNum !== seq) {
-            // 連番がずれた既存行をシート上の新しい行番号で更新
-            const insertionsAbove = newPropAsc.filter(e2 => e2.insertRowIdx <= item.origRowIdx).length;
-            const newSheetRow = item.origRowIdx + insertionsAbove * 2 + 1; // 1-based
-            newRowData.push({ range: `${sheetName}!A${newSheetRow}`, values: [[seq]] });
-          }
-          seq++;
-        }
-        // 新規行のA列に連番を書き込む
-        for (const e of newPropEntries) {
-          const assignedSeq = newSeqMap.get(e.listingKey);
-          if (assignedSeq !== undefined) {
-            const r1 = offsets.get(e.listingKey);
-            newRowData.push({ range: `${sheetName}!A${r1}`, values: [[assignedSeq]] });
-          }
-        }
+      if (existSeqUpdates.length > 0) {
+        await sheetsPost(`spreadsheets/${spreadsheetId}/values:batchUpdate`, {
+          valueInputOption: 'USER_ENTERED',
+          data: existSeqUpdates,
+        });
       }
 
       if (newRowData.length > 0) {
