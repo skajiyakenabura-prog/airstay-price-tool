@@ -600,10 +600,12 @@
     <div style="font-weight:700;font-size:15px;margin-bottom:8px;color:#1d4ed8;">📋 新規物件の初期価格設定</div>
     <p style="margin:0 0 12px;color:#374151;">以下の新規物件が検出されました。<strong>Google Sheetsに書き出す前に現在の設定価格を入力してください。</strong><br>入力後「確定」ボタンを押すと、価格がレポートに反映されます。</p>
     <div id="new-prop-inputs"></div>
-    <div style="margin-top:12px;display:flex;gap:12px;align-items:center;">
-      <button id="btn-confirm-new-prices" class="btn btn-primary">確定してレポートに反映する</button>
+    <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+      <button id="btn-confirm-new-prices" class="btn btn-primary">確定してレポートに反映する（初期価格のまま）</button>
+      <button id="btn-confirm-new-prices-with-score" class="btn" style="background:#7c3aed;color:#fff;">確定して需要スコアで価格提案する</button>
       <span id="new-prop-confirmed-msg" style="display:none;color:#059669;font-weight:600;">✓ 価格確定済み — Google Sheetsに書き出せます</span>
     </div>
+    <p style="margin:8px 0 0;font-size:12px;color:#6b7280;">「需要スコアで価格提案する」は、入力した初期価格を基に予約実績データから需要スコアを計算し、価格調整を提案します。</p>
   </div>
 
   <!-- サマリー -->
@@ -945,6 +947,10 @@ const state = {
   gsSpreadsheetId: null,
   gsMasterSheetName: null,
   newPropertyPrices: null,  // { "物件名": { 平日: 15000, 週末: 18000 } }
+  bookingMap: null,
+  bookingMapNorm: null,
+  currentBookingMap: null,
+  currentBookingMapNorm: null,
 };
 
 // ==================== ファイル読み込み ====================
@@ -2092,6 +2098,10 @@ function runCalc() {
     state.results = results;
     state.newMasterData = masterCopy;
     state.newMasterFields = newMasterFields;
+    state.bookingMap = bookingMap;
+    state.bookingMapNorm = bookingMapNorm;
+    state.currentBookingMap = currentBookingMap;
+    state.currentBookingMapNorm = currentBookingMapNorm;
     renderResults(results);
 
     // 新規物件パネルの更新
@@ -2659,6 +2669,66 @@ document.getElementById('btn-confirm-new-prices').addEventListener('click', () =
   document.getElementById('new-prop-confirmed-msg').style.display = 'inline';
 });
 
+// 需要スコアで新規物件の価格を提案するボタン
+document.getElementById('btn-confirm-new-prices-with-score').addEventListener('click', () => {
+  const prices = {};
+  document.querySelectorAll('.new-prop-price-input').forEach(input => {
+    const name = input.dataset.prop;
+    const day  = input.dataset.day;
+    const val  = parseInt(input.value, 10);
+    if (!prices[name]) prices[name] = {};
+    prices[name][day] = isNaN(val) ? 10000 : val;
+  });
+  state.newPropertyPrices = prices;
+
+  if (!state.results || !state.bookingMap) return;
+
+  for (const r of state.results) {
+    if (!r.isNew || !prices[r.propName]) continue;
+    const oldPrice = prices[r.propName][r.dayType];
+    if (!oldPrice) continue;
+
+    // 需要スコア計算（bookingMapから）
+    const bookingRow = state.bookingMap[r.propName.toLowerCase()]
+      || (state.bookingMapNorm && state.bookingMapNorm[normalizePropName(r.propName)]);
+    let newBookingScore = bookingRow ? calcScore(bookingRow) : 0;
+
+    let currentScore = null;
+    if (state.currentBookingData && state.currentBookingMap) {
+      const currentRow = state.currentBookingMap[r.propName.toLowerCase()]
+        || (state.currentBookingMapNorm && state.currentBookingMapNorm[normalizePropName(r.propName)]);
+      currentScore = currentRow ? calcScore(currentRow) : 0;
+    }
+
+    // 合成スコア計算
+    const step2Norm = Math.min(1.0, newBookingScore / APP_CONFIG.step2SaturationScore);
+    let finalScore;
+    if (currentScore !== null) {
+      const step3Norm = Math.min(1.0, currentScore / APP_CONFIG.step3SaturationScore);
+      finalScore = Math.round((step2Norm * APP_CONFIG.step2Weight + step3Norm * APP_CONFIG.step3Weight) * 100);
+    } else {
+      finalScore = Math.round(step2Norm * 100);
+    }
+
+    const { deltaRate, status, label } = calcDelta(finalScore);
+    const { newPrice, delta } = applyDeltaRate(oldPrice, deltaRate);
+    const minPrice = APP_CONFIG.minSalePrice;
+
+    r.newPrice  = Math.max(newPrice, minPrice);
+    r.delta     = r.newPrice - oldPrice;
+    r.score     = finalScore;
+    r.newBookingScore = newBookingScore;
+    r.currentScore    = currentScore;
+    r.status    = status;
+    r.label     = label;
+    r.oldPrice  = oldPrice;
+    r.isNew     = false; // 需要スコア適用後は通常物件として扱う
+  }
+
+  renderResults(state.results);
+  document.getElementById('new-prop-confirmed-msg').style.display = 'inline';
+});
+
 // --- Sheets API ヘルパー ---
 function colIdxToLetter(idx) {
   let result = '', n = idx + 1;
@@ -2821,6 +2891,8 @@ async function executeGsWrite() {
     for (const r of state.results) resultsNumMap[`${r.propName}|${r.dayType}`] = r.newPrice;
 
     // ── 既存行に価格を書き込み ────────────────────────────────────────
+    // priceEntries: 行挿入後の正確な行番号はnewPropEntries確定後に計算するため一旦保留
+    const priceEntries = []; // { origRowIdx, newPrice, prevPrice }
     let lastPropName = '';
     let lastRoomVal  = '';
     const existingKeys   = new Set();
@@ -2833,6 +2905,9 @@ async function executeGsWrite() {
       if (propCell !== '') {
         lastPropName = propCell.replace(/\*/g, '');
         lastRoomVal  = roomCell.replace(/\*/g, '');
+      } else if (dayType === '平日' && roomCell !== '') {
+        // 物件名が結合セルで空でも部屋番号が変わった場合は更新（多部屋物件対応）
+        lastRoomVal = roomCell.replace(/\*/g, '');
       }
       if (dayType !== '平日' && dayType !== '週末') continue;
       if (!lastPropName) continue;
@@ -2843,8 +2918,7 @@ async function executeGsWrite() {
       if (dayType === '平日') sheetPropList.push({ listingKey, rowIdx: i });
       if (key in resultsNumMap) {
         const newPrice = resultsNumMap[key];
-        batchData.push({ range: `${sheetName}!${newColLetter}${i + 1}`, values: [[formatPrice(newPrice)]] });
-        addColorRequest(i, newPrice, getPrevPrice(row));
+        priceEntries.push({ origRowIdx: i, newPrice, prevPrice: getPrevPrice(row) });
       }
     }
 
@@ -2976,21 +3050,12 @@ async function executeGsWrite() {
       }
     }
 
-    // 新規行挿入によるbatchData・colorRequestsの行番号補正
-    if (newPropEntries.length > 0) {
-      for (const item of batchData) {
-        const m = item.range.match(/^(.+![A-Z]+)(\d+)$/);
-        if (!m) continue;
-        const origRowIdx = parseInt(m[2], 10) - 1; // 0-based in currentValues
-        const shift = newPropEntries.filter(e => e.insertRowIdx <= origRowIdx).length * 2;
-        if (shift > 0) item.range = m[1] + (parseInt(m[2], 10) + shift);
-      }
-      for (const req of colorRequests) {
-        const rng = req.repeatCell?.range;
-        if (!rng) continue;
-        const shift = newPropEntries.filter(e => e.insertRowIdx <= rng.startRowIndex).length * 2;
-        if (shift > 0) { rng.startRowIndex += shift; rng.endRowIndex += shift; }
-      }
+    // priceEntriesをbatchDataに変換（行挿入後の正確な行番号を使用）
+    for (const entry of priceEntries) {
+      const above = newPropEntries.filter(e => e.insertRowIdx <= entry.origRowIdx).length;
+      const sheetRow = entry.origRowIdx + 1 + above * 2;
+      batchData.push({ range: `${sheetName}!${newColLetter}${sheetRow}`, values: [[formatPrice(entry.newPrice)]] });
+      addColorRequest(entry.origRowIdx + above * 2, entry.newPrice, entry.prevPrice);
     }
 
     // 値の書き込み
