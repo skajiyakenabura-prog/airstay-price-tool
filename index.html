@@ -2924,6 +2924,14 @@ async function executeGsWrite() {
 
     // ── 新規物件をアルファベット順で挿入 ─────────────────────────────
     // 新規物件の一意リスト（平日のみ）
+    // 新規物件の結果マップ（平日・週末それぞれのr.newPriceを取得）
+    const newPropResultMap = {};
+    for (const r of state.results) {
+      if (!r.isNew) continue;
+      if (!newPropResultMap[r.propName]) newPropResultMap[r.propName] = {};
+      newPropResultMap[r.propName][r.dayType] = r;
+    }
+
     const newPropEntries = [];
     const addedNew = new Set();
     for (const r of state.results) {
@@ -2933,12 +2941,18 @@ async function executeGsWrite() {
       const roomMatch = r.propName.match(/^(.*?)(\s#[^\s]+)$/);
       const propNameForSheet = roomMatch ? roomMatch[1] : r.propName;
       const roomNumForSheet  = roomMatch ? roomMatch[2].trim() : '';
-      const 平日Price = state.newPropertyPrices?.[r.propName]?.['平日'] ?? r.newPrice ?? 10000;
-      const 週末Price = state.newPropertyPrices?.[r.propName]?.['週末'] ?? r.newPrice ?? 10000;
+      // E列に書く初期価格（入力値）
+      const 平日InitPrice = state.newPropertyPrices?.[r.propName]?.['平日'] ?? 10000;
+      const 週末InitPrice = state.newPropertyPrices?.[r.propName]?.['週末'] ?? 10000;
+      // 最新日付列に書く価格（需要スコア適用後のr.newPriceを優先）
+      const rHira = newPropResultMap[r.propName]?.['平日'];
+      const rShu  = newPropResultMap[r.propName]?.['週末'];
+      const 平日NewPrice = (rHira && typeof rHira.newPrice === 'number') ? rHira.newPrice : 平日InitPrice;
+      const 週末NewPrice = (rShu  && typeof rShu.newPrice  === 'number') ? rShu.newPrice  : 週末InitPrice;
       // アルファベット順の挿入位置を決定
       const insertBefore = sheetPropList.findIndex(p => p.listingKey.toLowerCase() > r.propName.toLowerCase());
       const insertRowIdx = insertBefore === -1 ? currentValues.length : sheetPropList[insertBefore].rowIdx;
-      newPropEntries.push({ propNameForSheet, roomNumForSheet, 平日Price, 週末Price, insertRowIdx, listingKey: r.propName });
+      newPropEntries.push({ propNameForSheet, roomNumForSheet, 平日Price: 平日InitPrice, 週末Price: 週末InitPrice, 平日NewPrice, 週末NewPrice, insertRowIdx, listingKey: r.propName });
     }
     // 下から順に処理（上に挿入すると行インデックスがずれるため逆順）
     newPropEntries.sort((a, b) => b.insertRowIdx - a.insertRowIdx);
@@ -2991,9 +3005,12 @@ async function executeGsWrite() {
         // E列（初期価格列）にも書き込む
         newRowData.push({ range: `${sheetName}!E${r1}`, values: [[formatPrice(e.平日Price)]] });
         newRowData.push({ range: `${sheetName}!E${r2}`, values: [[formatPrice(e.週末Price)]] });
-        // 最新日付列にも書き込む
-        newRowData.push({ range: `${sheetName}!${newColLetter}${r1}`, values: [[formatPrice(e.平日Price)]] });
-        newRowData.push({ range: `${sheetName}!${newColLetter}${r2}`, values: [[formatPrice(e.週末Price)]] });
+        // 最新日付列：需要スコア適用後の価格を書き込む
+        newRowData.push({ range: `${sheetName}!${newColLetter}${r1}`, values: [[formatPrice(e.平日NewPrice)]] });
+        newRowData.push({ range: `${sheetName}!${newColLetter}${r2}`, values: [[formatPrice(e.週末NewPrice)]] });
+        // 色設定（初期価格と新価格を比較：上がれば青、下がれば赤、変化なし→黒）
+        addColorRequest(r1 - 1, e.平日NewPrice, e.平日NewPrice !== e.平日Price ? e.平日Price : null);
+        addColorRequest(r2 - 1, e.週末NewPrice, e.週末NewPrice !== e.週末Price ? e.週末Price : null);
       }
 
       // ── A列（連番）書き込み ──────────────────────────────────────────
