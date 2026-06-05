@@ -32,12 +32,6 @@
 
     /* ブランドロゴ */
     .brand-logo { height: 44px; display: block; object-fit: contain; }
-    .login-brand { text-align: center; margin-bottom: 20px; }
-    .login-brand .brand-logo { height: 64px; margin: 0 auto 12px; }
-    .login-brand .tool-name {
-      font-size: 15px; font-weight: 700; color: var(--text);
-      letter-spacing: 0.04em;
-    }
     header .brand-row { display: flex; align-items: center; gap: 14px; }
     header .brand-logo-wrap {
       background: #fff; border-radius: 10px; padding: 6px 10px;
@@ -47,42 +41,123 @@
     header .logo-title { font-size: 18px; font-weight: 700; letter-spacing: 0.03em; color: #fff; }
 
     /* ログイン画面 */
+    @keyframes floatBubble {
+      0%   { transform: translateY(0) scale(1); opacity: 0.18; }
+      50%  { transform: translateY(-60px) scale(1.08); opacity: 0.28; }
+      100% { transform: translateY(0) scale(1); opacity: 0.18; }
+    }
+    @keyframes loginCardIn {
+      from { opacity: 0; transform: translateY(24px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
     #login-overlay {
       position: fixed; inset: 0; z-index: 9999;
-      background: linear-gradient(160deg, #C5EBFA 0%, var(--brand-light) 45%, var(--brand) 100%);
+      background: linear-gradient(145deg, #0e2a45 0%, #0d4a72 35%, #1E96C8 70%, #2EACE3 100%);
       display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
     }
     #login-overlay.hidden { display: none; }
+    /* 背景の浮かぶ光の玉 */
+    #login-overlay::before, #login-overlay::after {
+      content: ''; position: absolute; border-radius: 50%; pointer-events: none;
+    }
+    #login-overlay::before {
+      width: 520px; height: 520px;
+      background: radial-gradient(circle, rgba(46,172,227,0.35) 0%, transparent 70%);
+      top: -120px; left: -100px;
+      animation: floatBubble 8s ease-in-out infinite;
+    }
+    #login-overlay::after {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(92,196,237,0.25) 0%, transparent 70%);
+      bottom: -80px; right: -60px;
+      animation: floatBubble 10s ease-in-out infinite reverse;
+    }
+    .login-bubbles {
+      position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+    }
+    .login-bubble {
+      position: absolute; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+      animation: floatBubble linear infinite;
+    }
+    /* カード全体のラッパー */
+    .login-card-wrap {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; align-items: center;
+      animation: loginCardIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+      width: 100%; max-width: 420px; padding: 0 20px;
+    }
+    /* ロゴエリア（カードの外・上部） */
+    .login-logo-area {
+      text-align: center; margin-bottom: 20px;
+    }
+    .login-logo-wrap {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 20px; padding: 14px 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.08) inset;
+      margin-bottom: 14px;
+    }
+    .login-logo-wrap .brand-logo { height: 52px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.18)); }
+    .login-logo-area .tool-name {
+      font-size: 17px; font-weight: 700; color: #fff;
+      letter-spacing: 0.06em;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+    .login-logo-area .tool-sub {
+      font-size: 12px; color: rgba(255,255,255,0.65);
+      margin-top: 4px; letter-spacing: 0.04em;
+    }
+    /* ログインボックス */
     .login-box {
-      background: var(--surface); border-radius: 20px; padding: 40px 36px 36px;
-      width: 100%; max-width: 400px;
-      box-shadow: 0 16px 48px rgba(46, 172, 227, 0.25);
-      border: 1px solid rgba(255,255,255,0.8);
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-radius: 24px; padding: 36px 36px 32px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.22), 0 1px 0 rgba(255,255,255,0.9) inset;
+      border: 1px solid rgba(255,255,255,0.7);
     }
-    .login-sub  { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 28px; line-height: 1.6; }
+    .login-divider {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 24px;
+    }
+    .login-divider::before, .login-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .login-divider span { font-size: 11px; color: var(--text-muted); white-space: nowrap; letter-spacing: 0.06em; font-weight: 600; }
     .login-field { margin-bottom: 16px; }
-    .login-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
-    .login-field input {
-      width: 100%; padding: 12px 14px; border: 1px solid var(--border);
-      border-radius: 10px; font-size: 15px; transition: border-color 0.2s, box-shadow 0.2s;
-      font-family: inherit;
+    .login-field label {
+      display: block; font-size: 12px; font-weight: 700; color: var(--text);
+      margin-bottom: 6px; letter-spacing: 0.04em;
     }
-    .login-field input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(46,172,227,0.15); }
+    .login-field input {
+      width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
+      border-radius: 12px; font-size: 15px; transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit; background: rgba(255,255,255,0.9);
+      color: var(--text);
+    }
+    .login-field input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(46,172,227,0.18); }
     .login-error {
       display: none; background: #fee2e2; border: 1px solid #fca5a5;
       color: #991b1b; font-size: 13px; padding: 10px 14px;
-      border-radius: 8px; margin-bottom: 16px; text-align: center;
+      border-radius: 10px; margin-bottom: 16px; text-align: center;
     }
     .login-error.show { display: block; }
     .btn-login {
-      width: 100%; padding: 13px; background: linear-gradient(135deg, var(--brand) 0%, var(--brand-light) 100%);
-      color: #fff; border: none; border-radius: 12px; font-size: 15px;
-      font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.15s;
-      box-shadow: 0 4px 16px rgba(46,172,227,0.35);
-      font-family: inherit;
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 50%, var(--brand-light) 100%);
+      color: #fff; border: none; border-radius: 14px; font-size: 15px;
+      font-weight: 700; cursor: pointer; letter-spacing: 0.06em;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 6px 20px rgba(46,172,227,0.45);
+      font-family: inherit; margin-top: 4px;
     }
-    .btn-login:hover { opacity: 0.92; transform: translateY(-1px); }
-    .btn-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-login:hover { opacity: 0.93; transform: translateY(-2px); box-shadow: 0 10px 28px rgba(46,172,227,0.5); }
+    .btn-login:active { transform: translateY(0); }
+    .btn-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
     .login-user-info { font-size: 13px; color: rgba(255,255,255,0.9); margin-left: auto; }
 
     /* ヘッダーのログアウトボタン */
@@ -308,22 +383,36 @@
 
 <!-- ログイン画面 -->
 <div id="login-overlay">
-  <div class="login-box">
-    <div class="login-brand">
-      <img src="assets/airstay-logo.png" alt="AIRSTAY" class="brand-logo">
+  <!-- 背景の装飾バブル -->
+  <div class="login-bubbles">
+    <div class="login-bubble" style="width:180px;height:180px;top:15%;left:10%;animation-duration:12s;animation-delay:-3s;"></div>
+    <div class="login-bubble" style="width:100px;height:100px;top:60%;left:20%;animation-duration:9s;animation-delay:-6s;"></div>
+    <div class="login-bubble" style="width:140px;height:140px;top:25%;right:12%;animation-duration:14s;animation-delay:-1s;"></div>
+    <div class="login-bubble" style="width:80px;height:80px;bottom:20%;right:25%;animation-duration:11s;animation-delay:-8s;"></div>
+  </div>
+  <div class="login-card-wrap">
+    <!-- ロゴエリア（カード外・上部） -->
+    <div class="login-logo-area">
+      <div class="login-logo-wrap">
+        <img src="assets/airstay-logo.png" alt="AIRSTAY" class="brand-logo">
+      </div>
       <div class="tool-name">ベース価格調整ツール</div>
+      <div class="tool-sub">株式会社AIRSTAY　月次ベース価格自動見直しシステム</div>
     </div>
-    <div class="login-sub">株式会社AIRSTAY<br>月次ベース価格自動見直しシステム</div>
-    <div class="login-error" id="login-error"></div>
-    <div class="login-field">
-      <label>メールアドレス</label>
-      <input type="email" id="login-email" autocomplete="email" placeholder="example@airstay.jp">
+    <!-- ログインフォーム -->
+    <div class="login-box">
+      <div class="login-divider"><span>アカウントにサインイン</span></div>
+      <div class="login-error" id="login-error"></div>
+      <div class="login-field">
+        <label>メールアドレス</label>
+        <input type="email" id="login-email" autocomplete="email" placeholder="example@airstay.jp">
+      </div>
+      <div class="login-field">
+        <label>パスワード</label>
+        <input type="password" id="login-pass" autocomplete="current-password" placeholder="パスワードを入力">
+      </div>
+      <button class="btn-login" id="btn-login">ログイン</button>
     </div>
-    <div class="login-field">
-      <label>パスワード</label>
-      <input type="password" id="login-pass" autocomplete="current-password" placeholder="パスワードを入力">
-    </div>
-    <button class="btn-login" id="btn-login">ログイン</button>
   </div>
 </div>
 
@@ -370,7 +459,7 @@
       <div id="master-tab-gs">
         <p style="font-size:12px;color:#666;margin-bottom:8px;">「読み込む」を押してください。</p>
         <div class="gs-input-wrap">
-          <input type="text" id="gs-master-url" value="https://docs.google.com/spreadsheets/d/113yErcCig38KkUbXqZnbXXPbYyB_kkLjCHNvG0gfY44/edit?usp=drive_link">
+          <input type="text" id="gs-master-url" value="https://docs.google.com/spreadsheets/d/1Yk-X80Og_Kz64rpmQJWVfqcpjmKiZkWdbP4rg1vVv5o/edit?usp=drive_link">
           <button class="btn btn-primary" id="btn-load-gs-master" style="white-space:nowrap;">読み込む</button>
         </div>
         <div class="gs-sheet-field">
@@ -447,13 +536,74 @@
   </div>
 
 
+  <!-- 閾値設定パネル -->
+  <div id="threshold-panel" style="background:#fff;border:1px solid #c8e6f5;border-radius:12px;margin-bottom:16px;overflow:hidden;">
+    <button id="threshold-toggle" onclick="toggleThresholdPanel()"
+      style="width:100%;text-align:left;padding:14px 20px;background:#f0f9ff;border:none;cursor:pointer;font-size:14px;font-weight:700;color:#1e6fa0;display:flex;justify-content:space-between;align-items:center;">
+      <span>⚙ 閾値・変動額の設定</span>
+      <span id="threshold-toggle-icon" style="font-size:12px;color:#888;">▼ 開く</span>
+    </button>
+    <div id="threshold-body" style="display:none;padding:20px;">
+      <p style="font-size:12px;color:#666;margin-bottom:16px;">合成スコア（0〜100点）の点数帯と、それに対応する価格変動額を設定します。変更後に「▶ 価格調整を実行する」を再実行してください。</p>
+
+      <!-- 飽和スコア設定 -->
+      <div style="display:flex;gap:24px;margin-bottom:20px;flex-wrap:wrap;">
+        <label style="font-size:13px;color:#444;">
+          加重スコア 飽和点（Step2）
+          <input id="cfg-step2sat" type="number" min="1" step="1" style="width:80px;margin-left:8px;padding:4px 8px;border:1px solid #ccc;border-radius:6px;font-size:13px;">
+          <span style="font-size:11px;color:#888;margin-left:4px;">点でMAX扱い</span>
+        </label>
+        <label style="font-size:13px;color:#444;">
+          現況スコア 飽和点（Step3）
+          <input id="cfg-step3sat" type="number" min="1" step="1" style="width:80px;margin-left:8px;padding:4px 8px;border:1px solid #ccc;border-radius:6px;font-size:13px;">
+          <span style="font-size:11px;color:#888;margin-left:4px;">点でMAX扱い</span>
+        </label>
+        <label style="font-size:13px;color:#444;">
+          加重スコアの重み
+          <input id="cfg-step2w" type="number" min="0" max="100" step="5" style="width:70px;margin-left:8px;padding:4px 8px;border:1px solid #ccc;border-radius:6px;font-size:13px;">
+          <span style="font-size:11px;color:#888;margin-left:4px;">%（残りは現況スコア）</span>
+        </label>
+      </div>
+
+      <!-- 閾値テーブル -->
+      <table id="threshold-table" style="border-collapse:collapse;width:100%;font-size:13px;">
+        <thead>
+          <tr style="background:#f0f9ff;">
+            <th style="padding:8px 12px;text-align:left;border:1px solid #dde;color:#555;white-space:nowrap;">ラベル</th>
+            <th style="padding:8px 12px;text-align:center;border:1px solid #dde;color:#555;white-space:nowrap;">スコア下限</th>
+            <th style="padding:8px 12px;text-align:center;border:1px solid #dde;color:#555;white-space:nowrap;">スコア上限</th>
+            <th style="padding:8px 12px;text-align:center;border:1px solid #dde;color:#555;white-space:nowrap;">変動率（%）</th>
+          </tr>
+        </thead>
+        <tbody id="threshold-tbody"></tbody>
+      </table>
+
+      <div style="margin-top:14px;display:flex;gap:10px;">
+        <button onclick="applyThresholdSettings()" class="btn btn-primary" style="font-size:13px;">設定を反映する</button>
+        <button onclick="resetThresholdSettings()" class="btn btn-secondary" style="font-size:13px;">デフォルトに戻す</button>
+      </div>
+      <p id="threshold-apply-msg" style="font-size:12px;color:#0369a1;margin-top:8px;display:none;">✓ 設定を反映しました。「▶ 価格調整を実行する」を再実行してください。</p>
+    </div>
+  </div>
+
   <!-- エラー -->
   <div class="error-box" id="error-box"></div>
 
   <!-- 照合診断パネル -->
   <div id="diag-panel" style="display:none;background:#fff;border:2px solid #f59e0b;border-radius:12px;padding:20px;margin-bottom:24px;font-size:13px;">
-    <div style="font-weight:700;font-size:15px;margin-bottom:12px;color:#92400e;">⚠ 照合ミスマッチ診断</div>
+    <div id="diag-title" style="font-weight:700;font-size:15px;margin-bottom:12px;color:#92400e;">📋 物件ステータス確認</div>
     <div id="diag-content"></div>
+  </div>
+
+  <!-- 新規物件初期価格入力パネル -->
+  <div id="new-prop-panel" style="display:none;background:#fff;border:2px solid #3b82f6;border-radius:12px;padding:20px;margin-bottom:24px;font-size:13px;">
+    <div style="font-weight:700;font-size:15px;margin-bottom:8px;color:#1d4ed8;">📋 新規物件の初期価格設定</div>
+    <p style="margin:0 0 12px;color:#374151;">以下の新規物件が検出されました。<strong>Google Sheetsに書き出す前に現在の設定価格を入力してください。</strong><br>入力後「確定」ボタンを押すと、価格がレポートに反映されます。</p>
+    <div id="new-prop-inputs"></div>
+    <div style="margin-top:12px;display:flex;gap:12px;align-items:center;">
+      <button id="btn-confirm-new-prices" class="btn btn-primary">確定してレポートに反映する</button>
+      <span id="new-prop-confirmed-msg" style="display:none;color:#059669;font-weight:600;">✓ 価格確定済み — Google Sheetsに書き出せます</span>
+    </div>
   </div>
 
   <!-- サマリー -->
@@ -487,6 +637,13 @@
       </div>
     </div>
 
+    <!-- スコア分布グラフ -->
+    <div id="score-dist-panel" style="background:#f8fbfe;border:1px solid #c8e6f5;border-radius:12px;padding:18px 24px;margin-bottom:20px;">
+      <div style="font-weight:700;font-size:14px;color:#1e6fa0;margin-bottom:14px;">📊 スコア分布（平日・週末合算）</div>
+      <div id="score-dist-chart" style="display:flex;align-items:flex-end;gap:6px;height:120px;"></div>
+      <div id="score-dist-legend" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;font-size:11px;"></div>
+    </div>
+
     <div class="filter-bar">
       <input type="text" id="filter-name" placeholder="物件名で絞り込み...">
       <select id="filter-day">
@@ -513,6 +670,7 @@
             <th>旧価格</th>
             <th>加重スコア</th>
             <th id="th-current-score" style="display:none;">現況スコア</th>
+            <th id="th-combined-score" style="display:none;">合成スコア</th>
             <th>変動額</th>
             <th>新価格</th>
             <th>ステータス</th>
@@ -643,7 +801,126 @@ setOverlay(false);
 const APP_CONFIG = {
   minPrice: 6000,
   defaultPrice: 10000,
+
+  // ── スコア計算の重み付け（M1〜M10） ──────────────────────────────
+  // リードタイム40〜90日を基準に設定
+  // M1・M2（1〜2ヶ月先）: 普通のリードタイム内 → 重み小
+  // M3（3ヶ月先）        : やや早め → 重み中
+  // M4以降              : リードタイム外に予約 = 価格が安すぎるサイン → 重み大
+  scoreWeights: [1, 1, 2, 4, 6, 8, 8, 8, 8, 8], // M1〜M10の順
+
+  // ── スコア正規化・合成 ────────────────────────────────────────────
+  // Step2スコア（加重予約件数）がこの値に達したら需要MAX（100）とみなす
+  step2SaturationScore: 60,
+  // Step3スコア（稼働率×10の加重合計）がこの値に達したら需要MAX（100）とみなす
+  step3SaturationScore: 90,
+  // 最終スコア = Step2_norm×70% + Step3_norm×30%（Step3がない場合はStep2_norm×100%）
+  step2Weight: 0.7,
+  step3Weight: 0.3,
+
+  // ── 価格調整の閾値（0〜100正規化スコア基準） ──────────────────────
+  // スコアが高い = 需要に対して価格が安い → 値上げ
+  // deltaRate: 旧価格に対する変動率（%）。¥500単位に丸めて適用
+  thresholds: [
+    { minScore: 80, deltaRate:  10, status: '値上げ',  label: '超高需要'   },
+    { minScore: 65, deltaRate:   7, status: '値上げ',  label: '高需要'     },
+    { minScore: 50, deltaRate:   4, status: '値上げ',  label: 'やや高需要' },
+    { minScore: 30, deltaRate:   0, status: '価格維持', label: '適正需要'   },
+    { minScore: 15, deltaRate:  -4, status: '値下げ',  label: 'やや低需要' },
+    { minScore:  1, deltaRate:  -7, status: '値下げ',  label: '低需要'     },
+    { minScore:  0, deltaRate: -10, status: '値下げ',  label: '需要なし'   },
+  ],
 };
+
+// ==================== 閾値設定パネル ====================
+const DEFAULT_CONFIG = JSON.parse(JSON.stringify({
+  step2SaturationScore: APP_CONFIG.step2SaturationScore,
+  step3SaturationScore: APP_CONFIG.step3SaturationScore,
+  step2Weight: APP_CONFIG.step2Weight,
+  thresholds: APP_CONFIG.thresholds,
+}));
+
+function toggleThresholdPanel() {
+  const body = document.getElementById('threshold-body');
+  const icon = document.getElementById('threshold-toggle-icon');
+  const open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  icon.textContent = open ? '▲ 閉じる' : '▼ 開く';
+  if (open) renderThresholdTable();
+}
+
+function renderThresholdTable() {
+  document.getElementById('cfg-step2sat').value = APP_CONFIG.step2SaturationScore;
+  document.getElementById('cfg-step3sat').value = APP_CONFIG.step3SaturationScore;
+  document.getElementById('cfg-step2w').value = Math.round(APP_CONFIG.step2Weight * 100);
+
+  const tbody = document.getElementById('threshold-tbody');
+  tbody.innerHTML = '';
+  const tiers = APP_CONFIG.thresholds;
+  tiers.forEach((tier, i) => {
+    const maxScore = i === 0 ? 100 : tiers[i - 1].minScore - 1;
+    const tr = document.createElement('tr');
+    tr.style.background = i % 2 === 0 ? '#fff' : '#f8fbfe';
+    tr.innerHTML = `
+      <td style="padding:7px 12px;border:1px solid #dde;">
+        <input type="text" data-i="${i}" data-field="label" value="${tier.label}"
+          style="width:100%;padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:13px;">
+      </td>
+      <td style="padding:7px 12px;border:1px solid #dde;text-align:center;">
+        <input type="number" data-i="${i}" data-field="minScore" value="${tier.minScore}" min="0" max="100"
+          style="width:70px;padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:13px;text-align:center;">
+      </td>
+      <td style="padding:7px 12px;border:1px solid #dde;text-align:center;color:#888;">
+        ${maxScore}
+      </td>
+      <td style="padding:7px 12px;border:1px solid #dde;text-align:center;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+          <input type="number" data-i="${i}" data-field="deltaRate" value="${tier.deltaRate}" step="1" min="-50" max="50"
+            style="width:70px;padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:13px;text-align:center;">
+          <span style="color:#666;">%</span>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function applyThresholdSettings() {
+  const step2sat = parseInt(document.getElementById('cfg-step2sat').value, 10);
+  const step3sat = parseInt(document.getElementById('cfg-step3sat').value, 10);
+  const step2w   = parseInt(document.getElementById('cfg-step2w').value, 10);
+  if (isNaN(step2sat) || isNaN(step3sat) || isNaN(step2w)) { alert('数値を正しく入力してください'); return; }
+  APP_CONFIG.step2SaturationScore = step2sat;
+  APP_CONFIG.step3SaturationScore = step3sat;
+  APP_CONFIG.step2Weight = step2w / 100;
+  APP_CONFIG.step3Weight = 1 - APP_CONFIG.step2Weight;
+
+  const tbody = document.getElementById('threshold-tbody');
+  const inputs = tbody.querySelectorAll('input');
+  const newTiers = JSON.parse(JSON.stringify(APP_CONFIG.thresholds));
+  inputs.forEach(inp => {
+    const i = parseInt(inp.dataset.i, 10);
+    const field = inp.dataset.field;
+    newTiers[i][field] = field === 'label' ? inp.value : parseFloat(inp.value);
+  });
+  // minScore 降順にソート（高スコア帯が先）
+  newTiers.sort((a, b) => b.minScore - a.minScore);
+  APP_CONFIG.thresholds = newTiers;
+
+  const msg = document.getElementById('threshold-apply-msg');
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 3000);
+  renderThresholdTable(); // 上限値を更新
+}
+
+function resetThresholdSettings() {
+  APP_CONFIG.step2SaturationScore = DEFAULT_CONFIG.step2SaturationScore;
+  APP_CONFIG.step3SaturationScore = DEFAULT_CONFIG.step3SaturationScore;
+  APP_CONFIG.step2Weight = DEFAULT_CONFIG.step2Weight;
+  APP_CONFIG.step3Weight = 1 - DEFAULT_CONFIG.step2Weight;
+  APP_CONFIG.thresholds = JSON.parse(JSON.stringify(DEFAULT_CONFIG.thresholds));
+  renderThresholdTable();
+}
 
 /** 実行月（yyyymm）— 当月を自動使用 */
 function getRunMonth() {
@@ -667,6 +944,7 @@ const state = {
   // Google Sheets連携
   gsSpreadsheetId: null,
   gsMasterSheetName: null,
+  newPropertyPrices: null,  // { "物件名": { 平日: 15000, 週末: 18000 } }
 };
 
 // ==================== ファイル読み込み ====================
@@ -791,6 +1069,8 @@ function setupBookingFileInput() {
           const runMonth = getRunMonth();
           const { processed, stats } = processRawBookings(data, runMonth, null);
           state.bookingData = processed;
+          state.bookingActiveMonths = stats.activeMonthsCount || 1;
+          state.bookingAllPropNames = stats.allPropNamesInCsv || new Set();
 
           badge.textContent = '✓ OK（PMS形式）';
           badge.className = 'badge badge-ok';
@@ -819,7 +1099,7 @@ function setupBookingFileInput() {
             <b>集計対象：${stats.included}件（${processed.length}リスティング）</b>
             ${roomColNote}
             ${stats.included === 0 ? '<br><span style="color:#b45309;">※ 集計対象が0件です。予約データのエクスポート期間を確認してください。</span>' : ''}
-            ${renderBookingStatsTable(processed, stats.mMonths)}
+            ${renderBookingStatsTable(processed, stats.mMonths, state.masterData, stats.mode)}
           `;
           statsDiv.style.display = 'block';
 
@@ -863,7 +1143,9 @@ function setupBookingFileInput() {
 // リスティング識別キーとして使用する（例：「AirStay浅草 201号室」）。
 // マスタの「物件名」列にも同じ形式（「AirStay浅草 201号室」）を使用することで
 // 部屋単位の価格管理・スコア算出が可能になる。
-function processRawBookings(rows, runMonth, overrideRoomCol) {
+// mode: 'count'     = 予約件数（チェックイン数）集計 → ステップ2用
+//       'occupancy' = 稼働率（予約泊数÷有効日数）集計 → ステップ3用
+function processRawBookings(rows, runMonth, overrideRoomCol, mode = 'count') {
   const runYear = parseInt(runMonth.substring(0, 4));
   const runMon  = parseInt(runMonth.substring(4, 6));
 
@@ -903,70 +1185,160 @@ function processRawBookings(rows, runMonth, overrideRoomCol) {
   const roomColNotFound = roomColName && roomColName.startsWith('__NOT_FOUND__:');
   const hasRoomCol = !!roomColName && !roomColNotFound;
 
+  // 月の日数を返すヘルパー（"YYYY-MM" 形式）
+  function getDaysInMonth(yearMonthStr) {
+    const [y, m] = yearMonthStr.split('-').map(Number);
+    return new Date(y, m, 0).getDate();
+  }
+
+  // リスティングキーを計算するヘルパー（物件名 + 部屋番号）
+  function calcListingKey(propName, roomColVal) {
+    const roomName = (roomColVal || '').replace(/\*/g, '').trim();
+    if (!roomName) return propName;
+    if (roomName.startsWith(propName)) return roomName;      // 部屋番号欄にフルネーム
+    if (propName.includes(roomName)) return propName;        // 物件名に既に含む
+    return `${propName} ${roomName}`;                        // 結合
+  }
+
   let excBlocked = 0, excCancelled = 0, excOutOfRange = 0, included = 0;
-  const propMap = {}; // リスティングキー -> {物件名, M1:0, ..., M10:0}
+  const allPropNamesInCsv = new Set();
+
+  // モード別に使うデータ構造
+  const checkinCounts = {}; // count モード: key -> { M1: count, ..., M10: count }
+  const bookedNights  = {}; // occupancy モード: key -> { M1: nights, ... }
+  const blockedNights = {}; // occupancy モード: key -> { M1: nights, ... }
+
+  function ensureEntry(map, key) {
+    if (!map[key]) { map[key] = {}; for (const mm of mMonths) map[key][mm.label] = 0; }
+  }
 
   for (const row of rows) {
-    const status = row['状態'] || '';
+    const status  = row['状態'] || '';
+    const nights  = Math.max(0, parseInt(row['合計日数'] || '0', 10) || 0);
+    const rawProp = (row['物件名'] || '').trim().replace(/\*/g, '');
+    if (!rawProp) continue;
 
-    // ブロックされた を除外
-    if (status === 'ブロックされた') { excBlocked++; continue; }
+    const roomRaw = hasRoomCol ? (row[roomColName] || '').trim() : '';
+    const key     = calcListingKey(rawProp, roomRaw);
 
-    // キャンセル系を除外
+    const checkinRaw   = (row['チェックイン'] || '').trim().replace(/\//g, '-');
+    const checkinMonth = checkinRaw.substring(0, 7);
+    const mMonth       = mMonths.find(mm => mm.str === checkinMonth);
+
+    if (status === 'ブロックされた') {
+      excBlocked++;
+      // occupancy モードのみ: ブロック泊数を記録（稼働率の分母を減らす）
+      if (mode === 'occupancy' && mMonth && nights > 0) {
+        ensureEntry(blockedNights, key);
+        blockedNights[key][mMonth.label] += nights;
+      }
+      continue;
+    }
+
     if (status.includes('キャンセル')) { excCancelled++; continue; }
 
-    // チェックイン月がM1-M10の範囲外を除外
-    const checkinMonth = (row['チェックイン'] || '').substring(0, 7);
-    const mMonth = mMonths.find(mm => mm.str === checkinMonth);
+    // 確定予約 → allPropNamesInCsv に追加（期間外も含む）
+    allPropNamesInCsv.add(key);
     if (!mMonth) { excOutOfRange++; continue; }
 
-    // AirHostの物件名には「ASAK*」のように「*」が付く場合があるが
-    // マスタでは「*」なしで登録しているため、照合時に除去する
-    const propName = (row['物件名'] || '').trim().replace(/\*/g, '');
-    if (!propName) continue;
-
-    // 部屋識別列がある場合のリスティングキー決定
-    const roomRaw = hasRoomCol ? (row[roomColName] || '').trim() : '';
-    const roomName = roomRaw.replace(/\*/g, ''); // 部屋番号側の「*」も除去
-
-    let listingKey;
-    if (!roomName) {
-      // 部屋番号なし（単室物件）→ 物件名のみ
-      listingKey = propName;
-    } else if (roomName.startsWith(propName)) {
-      // 部屋番号欄にリスティングフルネームが入っている場合（例：「USSJ - Up Support Sangenjaya #304」）→ そのまま使用
-      listingKey = roomName;
+    if (mode === 'count') {
+      // ── 予約件数モード（ステップ2）: チェックインを1件としてカウント ──
+      ensureEntry(checkinCounts, key);
+      checkinCounts[key][mMonth.label]++;
     } else {
-      // 部屋番号欄が「#01」等の短いコードの場合 → 「物件名 部屋番号」に結合
-      listingKey = `${propName} ${roomName}`;
+      // ── 稼働率モード（ステップ3）: 泊数を積算 ──
+      ensureEntry(bookedNights, key);
+      bookedNights[key][mMonth.label] += Math.max(1, nights);
     }
-
-    if (!propMap[listingKey]) {
-      const entry = { '物件名': listingKey };
-      for (const mm of mMonths) entry[mm.label] = 0;
-      propMap[listingKey] = entry;
-    }
-    propMap[listingKey][mMonth.label]++;
     included++;
   }
 
+  // propMap を構築（モードに応じて M1-M10 の値の意味が異なる）
+  const propMap = {};
+
+  if (mode === 'count') {
+    // 値 = チェックイン件数（整数）
+    for (const [key, counts] of Object.entries(checkinCounts)) {
+      const entry = { '物件名': key };
+      for (const mm of mMonths) entry[mm.label] = counts[mm.label] || 0;
+      propMap[key] = entry;
+    }
+  } else {
+    // 値 = 稼働率 × 10（0〜10スケール）、内訳データも付与
+    const allKeys = new Set([...Object.keys(bookedNights), ...Object.keys(blockedNights)]);
+    for (const key of allKeys) {
+      const entry = { '物件名': key };
+      for (const mm of mMonths) {
+        const booked       = (bookedNights[key]  || {})[mm.label] || 0;
+        const blocked      = (blockedNights[key] || {})[mm.label] || 0;
+        const daysInMon    = getDaysInMonth(mm.str);
+        const effectiveDays = Math.max(1, daysInMon - blocked);
+        const occRate      = Math.min(1.0, booked / effectiveDays);
+        entry[mm.label]            = Math.round(occRate * 10 * 10) / 10; // 小数1桁
+        entry[mm.label + '_nights']  = booked;
+        entry[mm.label + '_blocked'] = blocked;
+        entry[mm.label + '_days']    = daysInMon;
+      }
+      propMap[key] = entry;
+    }
+  }
+
+  // 実際にデータがある月数を算出（スコア正規化に使用）
+  const allProcessed = Object.values(propMap);
+  const activeMonthsCount = Math.max(1,
+    mMonths.filter(mm => allProcessed.some(row => (row[mm.label] || 0) > 0)).length
+  );
+
   return {
-    processed: Object.values(propMap),
+    processed: allProcessed,
     stats: {
       total: rows.length,
       excBlocked, excCancelled, excOutOfRange, included,
       mMonths,
+      activeMonthsCount,
       hasRoomCol,
       roomColName,
       roomColNotFound,
       allFields: rows.length > 0 ? Object.keys(rows[0]) : [],
+      allPropNamesInCsv,
+      mode, // 'count' or 'occupancy'
     },
   };
 }
 
-// 集計結果のプレビューテーブルHTML生成
-function renderBookingStatsTable(processed, mMonths) {
-  if (processed.length === 0) return '';
+// 集計結果のプレビューテーブルHTML生成（稼働率%表示）
+function renderBookingStatsTable(processed, mMonths, masterData, mode = 'count') {
+  if (processed.length === 0 && (!masterData || masterData.length === 0)) return '';
+
+  // processed を名前→行のマップに変換
+  const processedMap = {};
+  for (const r of processed) {
+    processedMap[(r['物件名'] || '').toLowerCase()] = r;
+  }
+
+  // 表示行リストをマスタ順で構築（予約なし物件も含む・撤退/休止は除外）
+  let displayRows = [];
+  if (masterData && masterData.length > 0) {
+    const seen = new Set();
+    for (const r of masterData) {
+      const n = (r['物件名'] || '').trim();
+      if (!n || seen.has(n.toLowerCase())) continue;
+      // 撤退・休止はスキップ
+      const isRetired = n.includes('撤退') || n.includes('休止') ||
+        Object.values(r).some(v => String(v || '').includes('撤退') || String(v || '').includes('休止'));
+      if (isRetired) { seen.add(n.toLowerCase()); continue; }
+      seen.add(n.toLowerCase());
+      // 予約データにあればそれを使い、なければ空行（物件名だけセット）
+      displayRows.push(processedMap[n.toLowerCase()] || { '物件名': n });
+    }
+    // マスタにない予約データ物件は末尾に追加
+    for (const r of processed) {
+      const k = (r['物件名'] || '').toLowerCase();
+      if (!seen.has(k)) { displayRows.push(r); seen.add(k); }
+    }
+  } else {
+    displayRows = processed;
+  }
   const visibleM = mMonths.filter((_, i) => i < 6); // M1-M6まで表示
   let html = `<div style="overflow-x:auto;margin-top:8px;">
     <table style="border-collapse:collapse;font-size:11px;width:100%;">
@@ -975,24 +1347,49 @@ function renderBookingStatsTable(processed, mMonths) {
   for (const mm of visibleM) {
     html += `<th style="padding:3px 6px;border:1px solid #B8DFEF;">${mm.label}<br><span style="font-weight:400;color:#666;">${mm.str}</span></th>`;
   }
-  if (mMonths.length > 6) html += `<th style="padding:3px 6px;border:1px solid #B8DFEF;">…M7-M10</th>`;
-  html += `<th style="padding:3px 6px;border:1px solid #B8DFEF;">合計</th></tr></thead><tbody>`;
+  if (mMonths.length > 6) html += `<th style="padding:3px 6px;border:1px solid #B8DFEF;">M7-M10</th>`;
+  html += `</tr></thead><tbody>`;
 
-  for (const row of processed) {
-    const total = mMonths.reduce((s, mm) => s + (row[mm.label] || 0), 0);
+  for (const row of displayRows) {
     html += `<tr>
       <td style="padding:3px 8px;border:1px solid #e5e7eb;font-weight:600;">${escHtml(row['物件名'])}</td>`;
-    for (const mm of visibleM) {
-      const v = row[mm.label] || 0;
-      html += `<td style="padding:3px 6px;border:1px solid #e5e7eb;text-align:center;${v > 0 ? 'color:#1d4ed8;font-weight:700;' : 'color:#aaa;'}">${v}</td>`;
+
+    if (mode === 'count') {
+      // ── 件数表示（ステップ2）──
+      for (const mm of visibleM) {
+        const v = row[mm.label] || 0;
+        const color = v >= 5 ? '#991b1b' : v >= 3 ? '#1d4ed8' : v > 0 ? '#374151' : '#aaa';
+        const bg    = v >= 5 ? '#fef2f2' : v >= 3 ? '#eff6ff' : '';
+        html += `<td style="padding:3px 6px;border:1px solid #e5e7eb;text-align:center;color:${color};background:${bg};${v > 0 ? 'font-weight:700;' : ''}">${v > 0 ? v + '件' : '-'}</td>`;
+      }
+      if (mMonths.length > 6) {
+        const rest = mMonths.slice(6).reduce((s, mm) => s + (row[mm.label] || 0), 0);
+        html += `<td style="padding:3px 6px;border:1px solid #e5e7eb;text-align:center;color:#888;font-size:10px;">${rest > 0 ? '計' + rest + '件' : '-'}</td>`;
+      }
+    } else {
+      // ── 稼働率%表示（ステップ3）──
+      for (const mm of visibleM) {
+        const occ     = row[mm.label] || 0;
+        const pct     = Math.round(occ * 10);
+        const nights  = row[mm.label + '_nights']  || 0;
+        const blocked = row[mm.label + '_blocked'] || 0;
+        const days    = row[mm.label + '_days']    || 30;
+        const tip = `${nights}泊予約 / ${blocked}泊ブロック / 有効${days - blocked}日`;
+        const color = pct >= 70 ? '#991b1b' : pct >= 40 ? '#1d4ed8' : pct > 0 ? '#374151' : '#aaa';
+        const bg    = pct >= 70 ? '#fef2f2' : pct >= 40 ? '#eff6ff' : '';
+        html += `<td title="${escHtml(tip)}" style="padding:3px 6px;border:1px solid #e5e7eb;text-align:center;color:${color};background:${bg};${pct > 0 ? 'font-weight:700;' : ''}">${pct > 0 ? pct + '%' : '-'}</td>`;
+      }
+      if (mMonths.length > 6) {
+        const restPct = Math.round(mMonths.slice(6).reduce((s, mm) => s + (row[mm.label] || 0), 0) / 4 * 10);
+        html += `<td style="padding:3px 6px;border:1px solid #e5e7eb;text-align:center;color:#888;font-size:10px;">${restPct > 0 ? '平均' + restPct + '%' : '-'}</td>`;
+      }
     }
-    if (mMonths.length > 6) {
-      const rest = mMonths.slice(6).reduce((s, mm) => s + (row[mm.label] || 0), 0);
-      html += `<td style="padding:3px 6px;border:1px solid #e5e7eb;text-align:center;">${rest || '-'}</td>`;
-    }
-    html += `<td style="padding:3px 6px;border:1px solid #e5e7eb;text-align:center;font-weight:700;">${total}</td></tr>`;
+    html += `</tr>`;
   }
   html += '</tbody></table></div>';
+  if (mode === 'occupancy') {
+    html += `<div style="font-size:10px;color:#888;margin-top:4px;">※ セルにマウスを当てると予約泊数・ブロック日数の内訳を確認できます</div>`;
+  }
   return html;
 }
 
@@ -1079,7 +1476,7 @@ function setupMasterFileInput() {
 }
 
 function parseXlsxRawData(rawData) {
-  // ── 日区分列・物件名列の位置を動的検出 ──────────────────────────────
+  // ── 日区分列の位置を動的検出 ──────────────────────────────────────
   // データ行を走査して「平日」「週末」が入っている列インデックスを特定する
   let dayTypeIdx = -1;
   for (let i = 1; i < Math.min(rawData.length, 20); i++) {
@@ -1090,10 +1487,24 @@ function parseXlsxRawData(rawData) {
     }
     if (dayTypeIdx >= 0) break;
   }
-  if (dayTypeIdx < 0) dayTypeIdx = 2; // フォールバック: 従来のC列
+  if (dayTypeIdx < 0) dayTypeIdx = 3; // フォールバック
 
-  // 物件名列は常にB列（インデックス1）
-  const propNameIdx = 1;
+  // ── 部屋番号列・物件名列の位置を動的検出 ──────────────────────────
+  // 先頭10行以内に「部屋番号」ヘッダーがあればその列を部屋番号列として使用
+  let roomNumColIdx = -1;
+  for (let i = 0; i < Math.min(rawData.length, 10); i++) {
+    const row = rawData[i] || [];
+    for (let j = 0; j < row.length; j++) {
+      if (String(row[j] || '').trim() === '部屋番号') { roomNumColIdx = j; break; }
+    }
+    if (roomNumColIdx >= 0) break;
+  }
+
+  // 物件名列：日区分より左でroomNumColIdx以外の最初の列（なければB列=1）
+  let propNameIdx = 1;
+  for (let j = 1; j < dayTypeIdx; j++) {
+    if (j !== roomNumColIdx) { propNameIdx = j; break; }
+  }
 
   // ── 価格列マップ構築（日区分列より右が価格列）───────────────────────
   // ヘッダー行で「当初」または日付セルを探す（日区分列+1列目以降）
@@ -1127,6 +1538,7 @@ function parseXlsxRawData(rawData) {
   const masterData = [];
   const rowPropNames = new Array(rawData.length).fill(null);
   let lastPropName = '';
+  let lastRoomVal = '';  // 部屋番号も引き継ぐ（週末行は空欄のため）
 
   for (let i = 1; i < rawData.length; i++) {
     const row = rawData[i];
@@ -1135,15 +1547,23 @@ function parseXlsxRawData(rawData) {
     if (dayType !== '平日' && dayType !== '週末') continue;
 
     // 物件名は平日行のみに入っている（週末行は空欄→引き継ぎ）
+    // 物件名が更新されたタイミングで部屋番号も同時に更新する
     const nameVal = row[propNameIdx];
     if (nameVal !== null && nameVal !== undefined && String(nameVal).trim() !== '') {
-      lastPropName = String(nameVal).trim();
+      lastPropName = String(nameVal).trim().replace(/\*/g, '');
+      lastRoomVal = roomNumColIdx >= 0 ? String(row[roomNumColIdx] || '').trim().replace(/\*/g, '') : '';
     }
     if (!lastPropName) continue;
 
-    rowPropNames[i] = lastPropName;
+    // 部屋番号列がある場合は「物件名 部屋番号」をlistingKeyとして使用
+    // ただし物件名に既に同じ部屋番号が含まれている場合は二重にしない
+    const listingKey = (lastRoomVal && !lastPropName.includes(lastRoomVal))
+      ? `${lastPropName} ${lastRoomVal}`
+      : lastPropName;
 
-    const internalRow = { '物件名': lastPropName, '日区分': dayType };
+    rowPropNames[i] = listingKey;
+
+    const internalRow = { '物件名': listingKey, '日区分': dayType };
     for (const idxStr of Object.keys(colMap)) {
       const idx = Number(idxStr);
       const v = row[idx];
@@ -1189,6 +1609,7 @@ function setupCurrentBookingFileInput() {
 
   function showOk(processed, stats, label) {
     state.currentBookingData = processed;
+    state.currentBookingActiveMonths = stats.activeMonthsCount || 1;
     badge.textContent = '✓ OK（AirHost形式）'; badge.className = 'badge badge-ok';
     msg.textContent = label + '　' + processed.length + '物件・集計対象 ' + stats.included + '件';
     statusEl.className = 'file-status show';
@@ -1214,7 +1635,7 @@ function setupCurrentBookingFileInput() {
       <b>集計対象：${stats.included}件（${processed.length}リスティング）</b>
       ${roomColNote2}
       ${stats.included === 0 ? '<br><span style="color:#b45309;">※ 集計対象が0件です。CSVの期間を確認してください。</span>' : ''}
-      ${renderBookingStatsTable(processed, stats.mMonths)}
+      ${renderBookingStatsTable(processed, stats.mMonths, state.masterData, stats.mode)}
     `;
     statsDiv.style.display = 'block';
     checkRunnable();
@@ -1230,7 +1651,7 @@ function setupCurrentBookingFileInput() {
     }
 
     const runMonth = getRunMonth();
-    const { processed, stats } = processRawBookings(allRows, runMonth, null);
+    const { processed, stats } = processRawBookings(allRows, runMonth, null, 'occupancy');
     showOk(processed, stats, label);
   }
 
@@ -1310,7 +1731,7 @@ function calcScore(row) {
     const val = row[col] || row[col.trim()] || 0;
     return parseInt(val, 10) || 0;
   };
-  const weights = [8, 6, 4, 2, 1, 1, 1, 1, 1, 1];
+  const weights = APP_CONFIG.scoreWeights; // M1〜M10
   let score = 0;
   for (let i = 1; i <= 10; i++) {
     score += get(`M${i}`) * weights[i - 1];
@@ -1319,11 +1740,18 @@ function calcScore(row) {
 }
 
 function calcDelta(score) {
-  if (score >= 81) return { delta: 1000, status: '値上げ', label: '超高需要' };
-  if (score >= 41) return { delta: 500,  status: '値上げ', label: '高需要' };
-  if (score >= 21) return { delta: 0,    status: '価格維持', label: '適正需要' };
-  if (score >= 1)  return { delta: -500, status: '値下げ', label: '低需要' };
-  return              { delta: -1000,   status: '値下げ', label: '需要なし' };
+  const t = APP_CONFIG.thresholds;
+  for (const tier of t) {
+    if (score >= tier.minScore) return { deltaRate: tier.deltaRate, status: tier.status, label: tier.label };
+  }
+  return { deltaRate: -10, status: '値下げ', label: '需要なし' };
+}
+
+/** 旧価格にdeltaRate(%)を適用し¥500単位に丸めた新価格と変動額を返す */
+function applyDeltaRate(oldPrice, deltaRate) {
+  const raw = oldPrice * (1 + deltaRate / 100);
+  const newPrice = Math.round(raw / 500) * 500;
+  return { newPrice, delta: newPrice - oldPrice };
 }
 
 // ¥25,000 や 25000 などの価格文字列を数値に変換する
@@ -1366,19 +1794,35 @@ function runCalc() {
     const masterFields = state.masterFields || Object.keys(state.masterData[0]);
     const bookingFields = Object.keys(state.bookingData[0]);
 
-    // 予約実績を物件名でマップ化
+    // 物件名の正規化（ハイフン類・特殊空白を統一してから照合）
+    const normalizePropName = s =>
+      s.replace(/[\u2010-\u2015\u2212\uff0d]/g, '-')  // 各種ハイフン → 標準ハイフン
+       .replace(/[\u00a0\u2000-\u200b\u3000\ufeff]/g, ' ')  // 特殊空白・BOM → 半角スペース
+       .replace(/\s+/g, ' ')  // 連続スペースを1つに
+       .trim()
+       .toLowerCase();
+
+    // 予約実績を物件名でマップ化（正規化キーで格納）
     const bookingMap = {};
+    const bookingMapNorm = {};  // 正規化キー → row
     for (const row of state.bookingData) {
       const name = (row['物件名'] || '').trim();
-      if (name) bookingMap[name] = row;
+      if (name) {
+        bookingMap[name.toLowerCase()] = row;
+        bookingMapNorm[normalizePropName(name)] = row;
+      }
     }
 
     // 現在の予約状況を物件名でマップ化（任意）
     const currentBookingMap = {};
+    const currentBookingMapNorm = {};
     if (state.currentBookingData) {
       for (const row of state.currentBookingData) {
         const name = (row['物件名'] || '').trim();
-        if (name) currentBookingMap[name] = row;
+        if (name) {
+          currentBookingMap[name.toLowerCase()] = row;
+          currentBookingMapNorm[normalizePropName(name)] = row;
+        }
       }
     }
 
@@ -1387,35 +1831,122 @@ function runCalc() {
     const diagContent = document.getElementById('diag-content');
     const masterNamesForDiag = [...new Set(state.masterData.map(r => (r['物件名'] || '').trim()).filter(Boolean))];
     const bookingKeys = Object.keys(bookingMap);
-    const unmatched = masterNamesForDiag.filter(n => !bookingMap[n] && !n.includes('撤退'));
-    const noMasterMatch = bookingKeys.filter(k => !masterNamesForDiag.includes(k));
+    // 撤退・休止チェック：物件名またはいずれかのセルに「撤退」「休止」を含む場合は除外
+    const isRetiredName = (n) => {
+      if (n.includes('撤退') || n.includes('休止')) return true;
+      const row = state.masterData.find(r => (r['物件名'] || '').trim() === n);
+      return row && Object.values(row).some(v => String(v || '').includes('撤退') || String(v || '').includes('休止'));
+    };
+    // ブロック・キャンセル除外後の全物件名（期間外含む）- 「将来予約なし」の判定用
+    const allPropNamesInCsv = state.bookingAllPropNames || new Set();
+    const allPropNamesNorm = new Set([...allPropNamesInCsv].map(n => normalizePropName(n)));
 
-    if (unmatched.length > 0) {
-      const showMax = 15;
-      const unmatchedSample = unmatched.slice(0, showMax);
-      const bookingSample = bookingKeys.slice(0, showMax);
+    // Step2予約データ・Step3現在予約データのどちらかに存在すればマッチ済みとみなす
+    // 通常一致 OR 正規化後一致（ハイフン種類違い等も許容）
+    const unmatched = masterNamesForDiag.filter(n =>
+      !bookingMap[n.toLowerCase()] &&
+      !bookingMapNorm[normalizePropName(n)] &&
+      !currentBookingMap[n.toLowerCase()] &&
+      !currentBookingMapNorm[normalizePropName(n)] &&
+      !isRetiredName(n)
+    );
+    // unmatched のうち「CSVに名前はあるが将来予約が0件」と「名前自体が見当たらない」に分類
+    const unmatchedNoFuture = unmatched.filter(n =>
+      allPropNamesInCsv.has(n) || allPropNamesNorm.has(normalizePropName(n))
+    );
+    const unmatchedNameMismatch = unmatched.filter(n =>
+      !allPropNamesInCsv.has(n) && !allPropNamesNorm.has(normalizePropName(n))
+    );
+    const noMasterMatch = bookingKeys.filter(k => !masterNamesForDiag.some(n => n.toLowerCase() === k));
 
-      diagContent.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-          <div>
-            <div style="font-weight:600;color:#991b1b;margin-bottom:6px;">マスタにあるが予約データと一致しない名前（${unmatched.length}件）</div>
-            <div style="background:#fef2f2;border-radius:6px;padding:10px;font-family:monospace;font-size:12px;line-height:1.9;">
-              ${unmatchedSample.map(n => `<div style="white-space:pre;">"${escHtml(n)}"</div>`).join('')}
-              ${unmatched.length > showMax ? `<div style="color:#888;">…他 ${unmatched.length - showMax} 件</div>` : ''}
+    // ---- 診断パネル表示 ----
+    const diagTitle = document.getElementById('diag-title');
+    const needsAttention = unmatchedNameMismatch.length > 0 || (unmatched.length > 0 && allPropNamesInCsv.size === 0);
+    const hasNoFuture = unmatchedNoFuture.length > 0;
+
+    if (needsAttention || hasNoFuture) {
+      // パネルの色・タイトルをステータスに応じて切り替え
+      if (needsAttention) {
+        diagPanel.style.borderColor = '#f59e0b';
+        diagTitle.style.color = '#92400e';
+        diagTitle.textContent = '⚠ 物件ステータス確認（要対応あり）';
+      } else {
+        diagPanel.style.borderColor = '#6ee7b7';
+        diagTitle.style.color = '#065f46';
+        diagTitle.textContent = '📋 物件ステータス確認';
+      }
+
+      // ---- ① 要対応：予約データに名前が見つからない ----
+      let section1 = '';
+      if (needsAttention) {
+        const mismatchList = (unmatchedNameMismatch.length > 0 ? unmatchedNameMismatch : unmatched);
+
+        // 近似候補サーチ
+        function toCharCodes(s) {
+          return Array.from(s).map(c => `U+${c.codePointAt(0).toString(16).toUpperCase().padStart(4,'0')}`).join(' ');
+        }
+        function findClosestBookingKey(masterName) {
+          const ml = masterName.toLowerCase();
+          const norm = s => s.replace(/[\u2010-\u2015\u2212\uff0d]/g, '-').replace(/[\u00a0\u2000-\u200b\u3000]/g, ' ').trim();
+          const normMatch = bookingKeys.find(k => norm(k) === norm(ml));
+          if (normMatch) return normMatch;
+          const prefix = bookingKeys.find(k => k.startsWith(ml.substring(0, Math.max(4, Math.floor(ml.length * 0.6)))));
+          if (prefix) return prefix;
+          return bookingKeys.find(k => Math.abs(k.length - ml.length) <= 5 && k.substring(0, 4) === ml.substring(0, 4)) || null;
+        }
+        const nearMatchHtml = mismatchList.map(n => {
+          const closest = findClosestBookingKey(n);
+          if (!closest) return '';
+          const norm = s => s.replace(/[\u2010-\u2015\u2212\uff0d]/g, '-').replace(/[\u00a0\u2000-\u200b\u3000]/g, ' ').trim();
+          const isNormMatch = norm(closest) === norm(n.toLowerCase());
+          if (isNormMatch) {
+            return `<div style="margin-left:8px;margin-top:2px;font-size:11px;color:#7c3aed;">　→ 近似名「${escHtml(closest)}」: ハイフン・空白の種類が違う可能性があります</div>`;
+          }
+          return `<div style="margin-left:8px;margin-top:2px;font-size:11px;color:#64748b;">　→ 似た名前「${escHtml(closest)}」が予約データにあります</div>`;
+        }).join('');
+
+        const allBookingKeysJson = JSON.stringify(bookingKeys);
+
+        section1 = `
+          <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:14px;margin-bottom:12px;">
+            <div style="font-weight:700;color:#991b1b;margin-bottom:8px;font-size:13px;">🔴 要対応：予約データに名前が見つからない（${mismatchList.length}件）</div>
+            <div style="font-size:12px;color:#7f1d1d;margin-bottom:10px;">
+              これらの物件は予約管理システム（PMS）の予約データに名前が見当たりません。<br>
+              <strong>名前の表記が変わった場合</strong>はマスタを修正、<strong>撤退・休止中の場合</strong>はマスタのセルに「撤退」または「休止」と入力すると、次回から表示されなくなります。
             </div>
-          </div>
-          <div>
-            <div style="font-weight:600;color:#1d4ed8;margin-bottom:6px;">予約データにある名前（${bookingKeys.length}件）</div>
-            <div style="background:#eff6ff;border-radius:6px;padding:10px;font-family:monospace;font-size:12px;line-height:1.9;">
-              ${bookingSample.map(k => `<div style="white-space:pre;">"${escHtml(k)}"</div>`).join('')}
-              ${bookingKeys.length > showMax ? `<div style="color:#888;">…他 ${bookingKeys.length - showMax} 件</div>` : ''}
+            <div style="font-family:monospace;font-size:12px;line-height:2;">
+              ${mismatchList.map(n => `<div>"${escHtml(n)}"</div>`).join('')}
             </div>
-          </div>
-        </div>
-        <div style="margin-top:12px;padding:10px;background:#fef3c7;border-radius:6px;color:#78350f;font-size:12px;">
-          ↑ 左右の名前を見比べて、一致しない原因（部屋番号の有無・スペース・表記の違いなど）を確認してください。<br>
-          マスタ名と予約データ名が<strong>一字一句同じ</strong>になるよう、どちらかを合わせる必要があります。
-        </div>`;
+            ${nearMatchHtml}
+            <details style="margin-top:10px;">
+              <summary style="cursor:pointer;color:#1d4ed8;font-size:12px;">▼ 予約データの全物件名を検索する</summary>
+              <div style="margin-top:8px;">
+                <input type="text" placeholder="物件コードを入力（例: fssn）" style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid #93c5fd;border-radius:6px;font-size:12px;" oninput="(function(v){const all=JSON.parse('${allBookingKeysJson.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;')}');const fl=all.filter(k=>k.includes(v.toLowerCase()));document.getElementById('diag-booking-list2').innerHTML=fl.length?fl.map(k=>'<div>&quot;'+k.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'&quot;</div>').join(''):'<div style=\\'color:#888;\\'>見つかりません</div>';})(this.value)">
+                <div id="diag-booking-list2" style="background:#eff6ff;border-radius:6px;padding:8px;font-family:monospace;font-size:11px;line-height:1.8;max-height:200px;overflow-y:auto;margin-top:6px;">
+                  <div style="color:#888;">↑ 検索するとここに結果が表示されます</div>
+                </div>
+              </div>
+            </details>
+          </div>`;
+      }
+
+      // ---- ② 情報：稼働中だが今後の予約なし ----
+      let section2 = '';
+      if (hasNoFuture) {
+        section2 = `
+          <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:14px;margin-bottom:12px;">
+            <div style="font-weight:700;color:#92400e;margin-bottom:8px;font-size:13px;">🟡 稼働中・今後の予約なし（${unmatchedNoFuture.length}件）</div>
+            <div style="font-size:12px;color:#78350f;margin-bottom:10px;">
+              これらの物件は予約データに名前が確認できています（稼働中）が、<strong>今後${bookingKeys.length > 0 ? '10ヶ月間' : ''}の予約がまだ入っていません</strong>。<br>
+              スコア0・値下げ推奨として計算されます。予約が入り次第、自動的に反映されます。
+            </div>
+            <div style="font-family:monospace;font-size:12px;line-height:2;color:#92400e;">
+              ${unmatchedNoFuture.map(n => `<div>"${escHtml(n)}"</div>`).join('')}
+            </div>
+          </div>`;
+      }
+
+      diagContent.innerHTML = section1 + section2;
       diagPanel.style.display = 'block';
     } else {
       diagPanel.style.display = 'none';
@@ -1426,17 +1957,20 @@ function runCalc() {
     const masterCopy = state.masterData.map(r => ({ ...r }));
     const newDateCol = getNewDateCol();
 
-    // 新規物件を検出してマスタ末尾に追加
-    const masterNames = new Set(masterCopy.map(r => (r['物件名'] || '').trim()));
-    const newProperties = [];
+    // 新規物件を検出してマスタ末尾に追加（大文字・小文字・ハイフン種類を無視して比較）
+    const masterNamesLower = new Set(masterCopy.map(r => (r['物件名'] || '').trim().toLowerCase()));
+    const masterNamesNorm = new Set(masterCopy.map(r => normalizePropName((r['物件名'] || '').trim())));
+    const newProperties = []; // 小文字キーで保持
     for (const name of Object.keys(bookingMap)) {
-      if (!masterNames.has(name)) {
+      // name はすでに小文字キー
+      if (!masterNamesLower.has(name) && !masterNamesNorm.has(normalizePropName(name))) {
         newProperties.push(name);
-        // 平日・週末の2行を追加
+        // 表示名は予約データの元の大文字・小文字を使用
+        const displayName = ((bookingMap[name]['物件名'] || '').trim()) || name;
         const baseRow = {};
         for (const f of masterFields) baseRow[f] = '';
-        masterCopy.push({ ...baseRow, '物件名': name, '日区分': '平日' });
-        masterCopy.push({ ...baseRow, '物件名': name, '日区分': '週末' });
+        masterCopy.push({ ...baseRow, '物件名': displayName, '日区分': '平日' });
+        masterCopy.push({ ...baseRow, '物件名': displayName, '日区分': '週末' });
       }
     }
 
@@ -1448,12 +1982,12 @@ function runCalc() {
       const propName = (masterRow['物件名'] || '').trim();
       const dayType = (masterRow['日区分'] || '').trim();
 
-      // 撤退物件はスキップ（物件名 or いずれかのセル値に「撤退」を含む場合）
-      const isRetired = propName.includes('撤退') ||
-        masterFields.some(f => String(masterRow[f] || '').includes('撤退'));
+      // 撤退・休止物件はスキップ（物件名 or いずれかのセル値に「撤退」「休止」を含む場合）
+      const isRetired = propName.includes('撤退') || propName.includes('休止') ||
+        masterFields.some(f => String(masterRow[f] || '').includes('撤退') || String(masterRow[f] || '').includes('休止'));
       if (isRetired) continue;
 
-      const isNew = newProperties.includes(propName);
+      const isNew = newProperties.includes(propName.toLowerCase());
       const oldPrice = getLatestPrice(masterRow, masterFields);
 
       let score = 0;
@@ -1479,35 +2013,42 @@ function runCalc() {
         label = '価格未設定';
         note = '前回価格が未設定のためデフォルト価格を適用';
       } else {
-        // 新規予約スコア計算
-        const bookingRow = bookingMap[propName];
+        // ── Step2スコア計算（加重予約件数）──────────────────────────────
+        const bookingRow = bookingMap[propName.toLowerCase()] || bookingMapNorm[normalizePropName(propName)];
         if (bookingRow) {
           newBookingScore = calcScore(bookingRow);
         } else {
           newBookingScore = 0; // 予約実績なし → スコア0
           note = '先月の予約実績なし（スコア0）';
         }
-        score = newBookingScore;
 
-        // 現在の予約状況スコアで補正（任意データ）
+        // ── Step3スコア計算（稼働率ベース）──────────────────────────────
         if (state.currentBookingData) {
-          const currentRow = currentBookingMap[propName];
-          if (currentRow) {
-            currentScore = calcScore(currentRow);
-            if (currentScore > score) {
-              score = currentScore;
-              scoreOverridden = true;
-            }
-          } else {
-            currentScore = 0;
-          }
+          const currentRow = currentBookingMap[propName.toLowerCase()] || currentBookingMapNorm[normalizePropName(propName)];
+          currentScore = currentRow ? calcScore(currentRow) : 0;
         }
 
-        const { delta: d, status: s, label: l } = calcDelta(score);
-        delta = d;
+        // ── 正規化して合成（0〜100スケール）────────────────────────────
+        // Step2: 加重予約件数をstep2SaturationScoreで割り0〜1に正規化
+        const step2Norm = Math.min(1.0, newBookingScore / APP_CONFIG.step2SaturationScore);
+        let finalScore;
+        if (state.currentBookingData && currentScore !== null) {
+          // Step3: 稼働率スコアをstep3SaturationScoreで割り0〜1に正規化
+          const step3Norm = Math.min(1.0, currentScore / APP_CONFIG.step3SaturationScore);
+          finalScore = Math.round((step2Norm * APP_CONFIG.step2Weight + step3Norm * APP_CONFIG.step3Weight) * 100);
+          scoreOverridden = true; // Step3が計算に含まれていることを示す
+        } else {
+          // Step3なし → Step2のみで100%評価
+          finalScore = Math.round(step2Norm * 100);
+        }
+        score = finalScore;
+
+        const { deltaRate: dr, status: s, label: l } = calcDelta(score);
+        const applied = applyDeltaRate(oldPrice, dr);
+        delta = applied.delta;
+        newPrice = applied.newPrice;
         status = s;
         label = l;
-        newPrice = oldPrice + delta;
       }
 
       // 最低価格ガードレール
@@ -1522,9 +2063,11 @@ function runCalc() {
       // マスタ行に新価格を書き込み
       masterRow[newDateCol] = newPrice;
 
-      // スコア上書き時のノート追記
+      // Step3込み合成スコアのノート追記
       if (scoreOverridden) {
-        note += (note ? ' / ' : '') + `現況スコア(${currentScore})が新規スコア(${newBookingScore})を上回るため採用`;
+        const step2Pct = Math.round(Math.min(1.0, newBookingScore / APP_CONFIG.step2SaturationScore) * 100);
+        const step3Pct = Math.round(Math.min(1.0, currentScore / APP_CONFIG.step3SaturationScore) * 100);
+        note += (note ? ' / ' : '') + `加重スコア${step2Pct}×60% + 現況スコア${step3Pct}×40% → 合成${score}`;
       }
 
       results.push({
@@ -1535,6 +2078,7 @@ function runCalc() {
         newBookingScore: isNew ? '-' : newBookingScore,
         currentScore: isNew ? '-' : currentScore,
         scoreOverridden,
+        deltaRate: isNew ? 0 : (calcDelta(score).deltaRate ?? 0),
         delta: isNew ? 0 : delta,
         newPrice,
         status: floorApplied && status !== '新規物件' ? status : status,
@@ -1549,6 +2093,41 @@ function runCalc() {
     state.newMasterData = masterCopy;
     state.newMasterFields = newMasterFields;
     renderResults(results);
+
+    // 新規物件パネルの更新
+    const newPropPanel = document.getElementById('new-prop-panel');
+    const newPropInputs = document.getElementById('new-prop-inputs');
+    const newPropNames = [...new Set(results.filter(r => r.isNew).map(r => r.propName))];
+    state.newPropertyPrices = newPropNames.length > 0 ? {} : null;
+    document.getElementById('new-prop-confirmed-msg').style.display = 'none';
+
+    if (newPropNames.length > 0) {
+      let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="background:#1d4ed8;color:#fff;">
+          <th style="padding:8px;text-align:left;border:1px solid #93c5fd;">物件名</th>
+          <th style="padding:8px;text-align:center;border:1px solid #93c5fd;">平日価格（円）</th>
+          <th style="padding:8px;text-align:center;border:1px solid #93c5fd;">週末価格（円）</th>
+        </tr></thead><tbody>`;
+      for (const name of newPropNames) {
+        html += `<tr>
+          <td style="padding:8px;border:1px solid #ddd;">${escHtml(name)}</td>
+          <td style="padding:8px;border:1px solid #ddd;text-align:center;">
+            <input type="number" class="new-prop-price-input" data-prop="${escHtml(name)}" data-day="平日"
+              style="width:110px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;" min="0" step="500" placeholder="例：15000">
+          </td>
+          <td style="padding:8px;border:1px solid #ddd;text-align:center;">
+            <input type="number" class="new-prop-price-input" data-prop="${escHtml(name)}" data-day="週末"
+              style="width:110px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;" min="0" step="500" placeholder="例：18000">
+          </td>
+        </tr>`;
+      }
+      html += `</tbody></table>`;
+      newPropInputs.innerHTML = html;
+      newPropPanel.style.display = 'block';
+    } else {
+      newPropPanel.style.display = 'none';
+    }
+
     updateGasExportBtn();
 
   } catch (e) {
@@ -1556,6 +2135,61 @@ function runCalc() {
     errorBox.className = 'error-box show';
     console.error(e);
   }
+}
+
+// ==================== スコア分布グラフ ====================
+function renderScoreDist(results) {
+  const tiers = APP_CONFIG.thresholds.map((t, i, arr) => {
+    const max = i === 0 ? 100 : arr[i - 1].minScore - 1;
+    return { label: t.label, delta: t.delta, minScore: t.minScore, maxScore: max };
+  });
+
+  // 平日のみで物件を一意にカウント（平日・週末で同スコアのため重複排除）
+  const counted = results.filter(r => r.dayType === '平日' && typeof r.score === 'number');
+
+  const tierCounts = tiers.map(tier => ({
+    ...tier,
+    count: counted.filter(r => r.score >= tier.minScore && r.score <= tier.maxScore).length,
+  }));
+
+  const maxCount = Math.max(...tierCounts.map(t => t.count), 1);
+
+  const colors = {
+    '超高需要':   '#0369a1',
+    '高需要':     '#0ea5e9',
+    'やや高需要': '#7dd3fc',
+    '適正需要':   '#6ee7b7',
+    'やや低需要': '#fde68a',
+    '低需要':     '#fdba74',
+    '需要なし':   '#fca5a5',
+  };
+
+  const chart = document.getElementById('score-dist-chart');
+  const legend = document.getElementById('score-dist-legend');
+  chart.innerHTML = '';
+  legend.innerHTML = '';
+
+  tierCounts.forEach(tier => {
+    const pct = Math.round(tier.count / maxCount * 100);
+    const col = colors[tier.label] || '#ccc';
+    const dr = tier.deltaRate ?? 0;
+    const deltaStr = dr > 0 ? `+${dr}%` : dr < 0 ? `${dr}%` : '±0%';
+
+    // バー
+    const bar = document.createElement('div');
+    bar.style.cssText = `flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;`;
+    bar.innerHTML = `
+      <span style="font-size:11px;font-weight:700;color:#333;">${tier.count}</span>
+      <div style="width:100%;background:${col};border-radius:4px 4px 0 0;height:${Math.max(pct, tier.count > 0 ? 4 : 0)}%;min-height:${tier.count > 0 ? '4px' : '0'};transition:height 0.3s;"></div>
+    `;
+    chart.appendChild(bar);
+
+    // 凡例
+    const leg = document.createElement('div');
+    leg.style.cssText = `display:flex;align-items:center;gap:4px;white-space:nowrap;`;
+    leg.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${col};flex-shrink:0;"></span><span style="color:#555;">${tier.label}（${deltaStr}）${tier.minScore}〜${tier.maxScore}点: <b>${tier.count}件</b></span>`;
+    legend.appendChild(leg);
+  });
 }
 
 // ==================== 結果表示 ====================
@@ -1571,6 +2205,7 @@ function renderResults(results) {
   document.getElementById('result-summary').className = 'result-summary show';
   document.getElementById('result-section').className = 'result-section show';
 
+  renderScoreDist(results);
   applyFilters();
 }
 
@@ -1603,8 +2238,10 @@ function renderTable() {
   const maxScore = Math.max(...results.map(r => typeof r.score === 'number' ? r.score : 0), 1);
   const hasCurrentData = !!state.currentBookingData;
 
-  // 現況スコア列の表示/非表示
+  // 現況スコア列の表示/非表示（Step3データがある場合のみ）
   document.getElementById('th-current-score').style.display = hasCurrentData ? '' : 'none';
+  // 合成スコア列はStep3がある場合のみ表示（Step3なし時は加重スコア=合成スコアのため不要）
+  document.getElementById('th-combined-score').style.display = hasCurrentData ? '' : 'none';
 
   const tbody = document.getElementById('result-tbody');
   tbody.innerHTML = '';
@@ -1612,22 +2249,35 @@ function renderTable() {
   pageData.forEach((r, i) => {
     const tr = document.createElement('tr');
 
-    const scoreDisplay = typeof r.score === 'number'
-      ? `<div class="score-bar-wrap">
-           <span style="min-width:30px;text-align:right;">${r.score}${r.scoreOverridden ? ' <span title="現況スコアを採用" style="color:#0369a1;font-size:10px;">★</span>' : ''}</span>
-           <div class="score-bar"><div class="score-bar-fill" style="width:${Math.min(100, r.score / maxScore * 100)}%"></div></div>
-         </div>`
+    // 加重スコア（Step2生値）
+    const step2Raw = r.newBookingScore;
+    const scoreDisplay = typeof step2Raw === 'number'
+      ? `<span style="color:#555;">${step2Raw}</span>`
       : '-';
 
+    // 現況スコア（Step3生値）
     const currentScoreDisplay = hasCurrentData
       ? (r.currentScore === '-' ? '-'
           : typeof r.currentScore === 'number'
-            ? `<span style="${r.scoreOverridden ? 'color:#0369a1;font-weight:700;' : 'color:#888;'}">${r.currentScore}</span>`
+            ? `<span style="color:#555;">${r.currentScore}</span>`
             : '-')
       : '';
 
-    const deltaDisplay = r.delta > 0 ? `<span class="price-up">+¥${r.delta.toLocaleString()}</span>`
-      : r.delta < 0 ? `<span class="price-down">¥${r.delta.toLocaleString()}</span>`
+    // 合成スコア（0〜100正規化後）バー付き
+    const combinedScoreDisplay = hasCurrentData
+      ? (typeof r.score === 'number'
+          ? `<div class="score-bar-wrap">
+               <span style="min-width:30px;text-align:right;font-weight:700;color:#0369a1;">${r.score}</span>
+               <div class="score-bar"><div class="score-bar-fill" style="width:${Math.min(100, r.score)}%"></div></div>
+             </div>`
+          : '-')
+      : '';
+
+    const deltaRate = r.deltaRate;
+    const deltaDisplay = r.delta > 0
+      ? `<span class="price-up">+¥${r.delta.toLocaleString()}</span><br><span style="font-size:11px;color:#059669;">(+${deltaRate}%)</span>`
+      : r.delta < 0
+      ? `<span class="price-down">¥${r.delta.toLocaleString()}</span><br><span style="font-size:11px;color:#dc2626;">(${deltaRate}%)</span>`
       : `<span class="price-same">±¥0</span>`;
 
     const statusTag = r.status === '値上げ' ? `<span class="tag tag-up">値上げ</span>`
@@ -1641,7 +2291,10 @@ function renderTable() {
     const newPriceClass = r.delta > 0 ? 'price-up' : r.delta < 0 ? 'price-down' : '';
 
     const currentScoreTd = hasCurrentData
-      ? `<td style="display:;">${currentScoreDisplay}</td>`
+      ? `<td>${currentScoreDisplay}</td>`
+      : '';
+    const combinedScoreTd = hasCurrentData
+      ? `<td>${combinedScoreDisplay}</td>`
       : '';
 
     tr.innerHTML = `
@@ -1651,6 +2304,7 @@ function renderTable() {
       <td>${oldPriceDisplay}</td>
       <td>${scoreDisplay}</td>
       ${currentScoreTd}
+      ${combinedScoreTd}
       <td>${deltaDisplay}</td>
       <td class="${newPriceClass}" style="font-weight:700;">¥${r.newPrice.toLocaleString()}</td>
       <td>${statusTag}${floorTag}</td>
@@ -1981,6 +2635,30 @@ function exportToGoogleSheets() {
 
 document.getElementById('btn-export-gs').addEventListener('click', exportToGoogleSheets);
 
+document.getElementById('btn-confirm-new-prices').addEventListener('click', () => {
+  const prices = {};
+  document.querySelectorAll('.new-prop-price-input').forEach(input => {
+    const name = input.dataset.prop;
+    const day  = input.dataset.day;
+    const val  = parseInt(input.value, 10);
+    if (!prices[name]) prices[name] = {};
+    prices[name][day] = isNaN(val) ? 10000 : val;
+  });
+  state.newPropertyPrices = prices;
+
+  // レポートの価格を更新
+  if (state.results) {
+    for (const r of state.results) {
+      if (r.isNew && prices[r.propName]) {
+        const entered = prices[r.propName][r.dayType];
+        if (entered) { r.newPrice = entered; r.delta = 0; }
+      }
+    }
+    renderResults(state.results);
+  }
+  document.getElementById('new-prop-confirmed-msg').style.display = 'inline';
+});
+
 // --- Sheets API ヘルパー ---
 function colIdxToLetter(idx) {
   let result = '', n = idx + 1;
@@ -1996,7 +2674,10 @@ async function sheetsProxy(method, path, body) {
     body: JSON.stringify({ method, path, body }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  if (!res.ok) {
+    const saInfo = data.debug_sa ? ` [SA: ${data.debug_sa}]` : '';
+    throw new Error((data.error || `HTTP ${res.status}`) + saInfo);
+  }
   return data;
 }
 // OAuth アクセストークン（ログイン後にメモリに保持）
@@ -2072,8 +2753,9 @@ async function executeGsWrite() {
 
     // 書き込みデータを構築
     const batchData = [];
-    // 色付けリクエスト（前月比較）
+    // 色付け・セル結合リクエスト
     const colorRequests = [];
+    const mergeRequests = [];
     const gsSheetId = sheetMeta ? sheetMeta.properties.sheetId : 0;
 
     // ヘッダー行（日付）
@@ -2107,22 +2789,58 @@ async function executeGsWrite() {
       });
     };
 
-    // 結果マップ: "物件名|日区分" → 新価格数値
+    // ── 列位置を動的検出 ──────────────────────────────────────────────
+    // 部屋番号列: ヘッダー行で「部屋番号」を探す
+    const gsHeaderRow = currentValues[0] || [];
+    let gsRoomIdx = -1;
+    for (let j = 0; j < gsHeaderRow.length; j++) {
+      if (String(gsHeaderRow[j] || '').trim() === '部屋番号') { gsRoomIdx = j; break; }
+    }
+    // 日区分列: データ行で「平日」「週末」を探す
+    let gsDayIdx = -1;
+    for (let i = 1; i < Math.min(currentValues.length, 20); i++) {
+      const row = currentValues[i] || [];
+      for (let j = 0; j < row.length; j++) {
+        const v = String(row[j] || '').trim();
+        if (v === '平日' || v === '週末') { gsDayIdx = j; break; }
+      }
+      if (gsDayIdx >= 0) break;
+    }
+    if (gsDayIdx < 0) gsDayIdx = 3;
+    // 物件名列: 日区分列より左で部屋番号列以外の最初の列
+    let gsPropIdx = 1;
+    for (let j = 1; j < gsDayIdx; j++) {
+      if (j !== gsRoomIdx) { gsPropIdx = j; break; }
+    }
+    const gsPropLetter  = colIdxToLetter(gsPropIdx);
+    const gsRoomLetter  = gsRoomIdx >= 0 ? colIdxToLetter(gsRoomIdx) : null;
+    const gsDayLetter   = colIdxToLetter(gsDayIdx);
+
+    // ── 結果マップ: "listingKey|日区分" → 新価格数値 ─────────────────
     const resultsNumMap = {};
     for (const r of state.results) resultsNumMap[`${r.propName}|${r.dayType}`] = r.newPrice;
 
-    // 既存行に価格を書き込み
+    // ── 既存行に価格を書き込み ────────────────────────────────────────
     let lastPropName = '';
-    const existingKeys = new Set();
+    let lastRoomVal  = '';
+    const existingKeys   = new Set();
+    const sheetPropList  = []; // {listingKey, rowIdx} 平日行のみ（アルファベット順挿入に使用）
     for (let i = 1; i < currentValues.length; i++) {
-      const row = currentValues[i] || [];
-      const propCell = row[1]; // B列: 物件名
-      const dayType  = row[2]; // C列: 日区分
-      if (propCell && String(propCell).trim() !== '') lastPropName = String(propCell).trim();
+      const row      = currentValues[i] || [];
+      const propCell = String(row[gsPropIdx] || '').trim();
+      const roomCell = gsRoomIdx >= 0 ? String(row[gsRoomIdx] || '').trim() : '';
+      const dayType  = String(row[gsDayIdx]  || '').trim();
+      if (propCell !== '') {
+        lastPropName = propCell.replace(/\*/g, '');
+        lastRoomVal  = roomCell.replace(/\*/g, '');
+      }
       if (dayType !== '平日' && dayType !== '週末') continue;
       if (!lastPropName) continue;
-      const key = `${lastPropName}|${dayType}`;
+      const listingKey = (lastRoomVal && !lastPropName.includes(lastRoomVal))
+        ? `${lastPropName} ${lastRoomVal}` : lastPropName;
+      const key = `${listingKey}|${dayType}`;
       existingKeys.add(key);
+      if (dayType === '平日') sheetPropList.push({ listingKey, rowIdx: i });
       if (key in resultsNumMap) {
         const newPrice = resultsNumMap[key];
         batchData.push({ range: `${sheetName}!${newColLetter}${i + 1}`, values: [[formatPrice(newPrice)]] });
@@ -2130,18 +2848,149 @@ async function executeGsWrite() {
       }
     }
 
-    // 新規物件を末尾に追加
-    let nextRow = currentValues.length + 1;
-    const addedKeys = new Set();
+    // ── 新規物件をアルファベット順で挿入 ─────────────────────────────
+    // 新規物件の一意リスト（平日のみ）
+    const newPropEntries = [];
+    const addedNew = new Set();
     for (const r of state.results) {
-      const key = `${r.propName}|${r.dayType}`;
-      if (!existingKeys.has(key) && !addedKeys.has(key)) {
-        if (r.dayType === '平日') batchData.push({ range: `${sheetName}!B${nextRow}`, values: [[r.propName]] });
-        batchData.push({ range: `${sheetName}!C${nextRow}`, values: [[r.dayType]] });
-        batchData.push({ range: `${sheetName}!${newColLetter}${nextRow}`, values: [[formatPrice(r.newPrice)]] });
-        addColorRequest(nextRow - 1, r.newPrice, null);
-        addedKeys.add(key);
-        nextRow++;
+      if (!r.isNew || addedNew.has(r.propName)) continue;
+      addedNew.add(r.propName);
+      // 物件名と部屋番号を分離（listingKey末尾の「 #XX」を抽出）
+      const roomMatch = r.propName.match(/^(.*?)(\s#[^\s]+)$/);
+      const propNameForSheet = roomMatch ? roomMatch[1] : r.propName;
+      const roomNumForSheet  = roomMatch ? roomMatch[2].trim() : '';
+      const 平日Price = state.newPropertyPrices?.[r.propName]?.['平日'] ?? r.newPrice ?? 10000;
+      const 週末Price = state.newPropertyPrices?.[r.propName]?.['週末'] ?? r.newPrice ?? 10000;
+      // アルファベット順の挿入位置を決定
+      const insertBefore = sheetPropList.findIndex(p => p.listingKey.toLowerCase() > r.propName.toLowerCase());
+      const insertRowIdx = insertBefore === -1 ? currentValues.length : sheetPropList[insertBefore].rowIdx;
+      newPropEntries.push({ propNameForSheet, roomNumForSheet, 平日Price, 週末Price, insertRowIdx, listingKey: r.propName });
+    }
+    // 下から順に処理（上に挿入すると行インデックスがずれるため逆順）
+    newPropEntries.sort((a, b) => b.insertRowIdx - a.insertRowIdx);
+
+    if (newPropEntries.length > 0) {
+      // 行の挿入リクエスト
+      const insertRequests = newPropEntries.map(e => ({
+        insertDimension: {
+          range: { sheetId: gsSheetId, dimension: 'ROWS', startIndex: e.insertRowIdx, endIndex: e.insertRowIdx + 2 },
+          inheritFromBefore: false,
+        }
+      }));
+      await sheetsPost(`spreadsheets/${spreadsheetId}:batchUpdate`, { requests: insertRequests });
+
+      // 挿入後の行番号を計算
+      // newPropEntries は降順ソート済み（下の行から順に挿入）
+      // batchUpdate は順番通り実行されるため、後から挿入される「上の行」が
+      // 先に挿入した「下の行」をその分だけ押し下げる
+      // → position[idx] の行は、idx+1以降のエントリ（全て上にある）の挿入分だけずれる
+      const offsets = new Map();
+      for (let idx = 0; idx < newPropEntries.length; idx++) {
+        const e = newPropEntries[idx];
+        const futureAboveInsertions = newPropEntries.length - idx - 1; // 自分より後（上）に挿入される件数
+        offsets.set(e.listingKey, e.insertRowIdx + futureAboveInsertions * 2 + 1); // 1-based
+      }
+      // データを書き込み
+      const newRowData = [];
+      for (const e of newPropEntries) {
+        const r1 = offsets.get(e.listingKey);     // 平日行（1-based）
+        const r2 = r1 + 1;                         // 週末行
+        if (e.propNameForSheet) {
+          newRowData.push({ range: `${sheetName}!${gsPropLetter}${r1}`, values: [[e.propNameForSheet]] });
+          // 物件名セルを平日・週末の2行分で縦結合
+          mergeRequests.push({
+            mergeCells: {
+              range: {
+                sheetId: gsSheetId,
+                startRowIndex: r1 - 1,      // 0-based
+                endRowIndex:   r1 + 1,      // exclusive（r1行とr2行の2行分）
+                startColumnIndex: gsPropIdx,
+                endColumnIndex:   gsPropIdx + 1,
+              },
+              mergeType: 'MERGE_ALL',
+            }
+          });
+        }
+        if (e.roomNumForSheet && gsRoomLetter) newRowData.push({ range: `${sheetName}!${gsRoomLetter}${r1}`, values: [[e.roomNumForSheet]] });
+        newRowData.push({ range: `${sheetName}!${gsDayLetter}${r1}`, values: [['平日']] });
+        newRowData.push({ range: `${sheetName}!${gsDayLetter}${r2}`, values: [['週末']] });
+        // E列（初期価格列）にも書き込む
+        newRowData.push({ range: `${sheetName}!E${r1}`, values: [[formatPrice(e.平日Price)]] });
+        newRowData.push({ range: `${sheetName}!E${r2}`, values: [[formatPrice(e.週末Price)]] });
+        // 最新日付列にも書き込む
+        newRowData.push({ range: `${sheetName}!${newColLetter}${r1}`, values: [[formatPrice(e.平日Price)]] });
+        newRowData.push({ range: `${sheetName}!${newColLetter}${r2}`, values: [[formatPrice(e.週末Price)]] });
+      }
+
+      // ── A列（連番）の割り当てと更新 ──────────────────────────────────
+      // 既存平日行の連番を収集
+      const existingWeekdayRows = [];
+      for (let i = 1; i < currentValues.length; i++) {
+        const row = currentValues[i] || [];
+        const dayType = String(row[gsDayIdx] || '').trim();
+        if (dayType === '平日') {
+          const numVal = row[0] ? String(row[0]).trim() : '';
+          existingWeekdayRows.push({
+            origRowIdx: i,
+            seqNum: /^\d+$/.test(numVal) ? parseInt(numVal, 10) : null,
+          });
+        }
+      }
+      // 新規物件を挿入位置の昇順に並べる
+      const newPropAsc = [...newPropEntries].sort((a, b) => a.insertRowIdx - b.insertRowIdx);
+      // 既存行+新規行を統合した順序リストを構築（アルファベット順）
+      const combinedOrder = [];
+      let existCursor = 0;
+      for (const e of newPropAsc) {
+        while (existCursor < existingWeekdayRows.length && existingWeekdayRows[existCursor].origRowIdx < e.insertRowIdx) {
+          combinedOrder.push({ isNew: false, ...existingWeekdayRows[existCursor] });
+          existCursor++;
+        }
+        combinedOrder.push({ isNew: true, listingKey: e.listingKey });
+      }
+      while (existCursor < existingWeekdayRows.length) {
+        combinedOrder.push({ isNew: false, ...existingWeekdayRows[existCursor] });
+        existCursor++;
+      }
+      // 最初の新規物件の直前の連番を起点に再連番
+      const firstNewPos = combinedOrder.findIndex(item => item.isNew);
+      if (firstNewPos >= 0) {
+        let lastSeq = 0;
+        for (let i = firstNewPos - 1; i >= 0; i--) {
+          if (!combinedOrder[i].isNew && combinedOrder[i].seqNum !== null) {
+            lastSeq = combinedOrder[i].seqNum;
+            break;
+          }
+        }
+        const newSeqMap = new Map(); // listingKey → 割り当て連番
+        let seq = lastSeq + 1;
+        for (let i = firstNewPos; i < combinedOrder.length; i++) {
+          const item = combinedOrder[i];
+          if (item.isNew) {
+            newSeqMap.set(item.listingKey, seq);
+          } else if (item.seqNum !== seq) {
+            // 連番がずれた既存行をシート上の新しい行番号で更新
+            const insertionsAbove = newPropAsc.filter(e2 => e2.insertRowIdx <= item.origRowIdx).length;
+            const newSheetRow = item.origRowIdx + insertionsAbove * 2 + 1; // 1-based
+            newRowData.push({ range: `${sheetName}!A${newSheetRow}`, values: [[seq]] });
+          }
+          seq++;
+        }
+        // 新規行のA列に連番を書き込む
+        for (const e of newPropEntries) {
+          const assignedSeq = newSeqMap.get(e.listingKey);
+          if (assignedSeq !== undefined) {
+            const r1 = offsets.get(e.listingKey);
+            newRowData.push({ range: `${sheetName}!A${r1}`, values: [[assignedSeq]] });
+          }
+        }
+      }
+
+      if (newRowData.length > 0) {
+        await sheetsPost(`spreadsheets/${spreadsheetId}/values:batchUpdate`, {
+          valueInputOption: 'USER_ENTERED',
+          data: newRowData,
+        });
       }
     }
 
@@ -2151,9 +3000,10 @@ async function executeGsWrite() {
       data: batchData,
     });
 
-    // 色の適用
-    if (colorRequests.length > 0) {
-      await sheetsPost(`spreadsheets/${spreadsheetId}:batchUpdate`, { requests: colorRequests });
+    // 色の適用・セル結合
+    const formatRequests = [...colorRequests, ...mergeRequests];
+    if (formatRequests.length > 0) {
+      await sheetsPost(`spreadsheets/${spreadsheetId}:batchUpdate`, { requests: formatRequests });
     }
 
     // 提案レポートシートを書き込み
